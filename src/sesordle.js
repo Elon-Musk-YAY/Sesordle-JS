@@ -4,7 +4,7 @@ const guess_grid = document.querySelector("[data-guess-grid]")
 const targetWords = ["tromie"]
 var guess_count = 1;
 
-const offsetFromDate = new Date(2022,4,2)
+const offsetFromDate = new Date(2022,4,3)
 const msOffset = Date.now() - offsetFromDate
 const dayOffset = msOffset / 1000 / 60 / 60 / 24
 const targetWord = targetWords[Math.floor(dayOffset)]
@@ -60,8 +60,10 @@ function deleteKey () {
 function submitGuess () {
     const activeTiles = [...getActiveTiles()]
     if (activeTiles.length < 6) {
-     showAlert("Not enough letters")
+     if (alertContainer.children.length <3){
+        showAlert("Not enough letters")
      shakeTiles(activeTiles)
+     }
     return
     }
     const guess = activeTiles.reduce((word, tile) => {
@@ -72,6 +74,11 @@ function submitGuess () {
     activeTiles.forEach((...params) => flipTiles(...params, guess))
     guess_count++;
     
+}
+
+
+function createAndCopyOutput  () {
+
 }
 
 function showAlert(message, duration = 1000) {

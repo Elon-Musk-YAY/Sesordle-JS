@@ -16,6 +16,7 @@ const createWindow = () => {
     width: 1300,
     height: 800,
     show: false,
+    icon : path.join(__dirname, 'icon.icns'),
     webPreferences: {
       nodeIntegration: true
     }
@@ -53,6 +54,9 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+
+
 
 
 
