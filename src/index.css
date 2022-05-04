@@ -18,6 +18,32 @@ body {
   text-align: center;
 }
 
+#top {
+  display: flex;
+  justify-content: center;
+  align-items: center;flex-wrap: nowrap;align-content: space-around;
+}
+
+#stats-div {
+  text-align: right;
+}
+#stats-button {
+  color: #fff;
+  height: 70px;
+  width: 160px;
+  background-color: rgb(15, 197, 60);
+  border-radius: 8px;
+  border:none;
+  margin-right: -200px;
+}
+
+#stats-button:hover {
+  background-color: rgb(14, 223, 66);
+  cursor: pointer;
+}
+
+
+
 .guess_container {
   display: grid;
   justify-content: center;
@@ -27,6 +53,7 @@ body {
   grid-template-rows: repeat(8,4em);
   gap:0.25em;
   margin-bottom: 1em;
+  margin-top: -50px;
 }
 
 .tile {

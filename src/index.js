@@ -16,14 +16,15 @@ const createWindow = () => {
     width: 1300,
     height: 800,
     show: false,
-    icon : path.join(__dirname, 'icon.icns'),
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      contextIsolation: false
     }
   });
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize();
     mainWindow.show()
+    mainWindow.setResizable(false);
   })
 
   // and load the index.html of the app.

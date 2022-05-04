@@ -1,15 +1,57 @@
-
 const alertContainer = document.querySelector("[data-alert-container]")
 const guess_grid = document.querySelector("[data-guess-grid]")
 const targetWords = ["tromie"]
 var guess_count = 1;
+var win = false;
+const {clipboard} = require('electron');
 
 const offsetFromDate = new Date(2022,4,3)
 const msOffset = Date.now() - offsetFromDate
 const dayOffset = msOffset / 1000 / 60 / 60 / 24
 const targetWord = targetWords[Math.floor(dayOffset)]
 
+document.getElementById("stats-button").onclick = showStats;
 
+function showStats()
+{
+    console.log("ran");
+    let out = createOutput();
+    copyToClipboard(out);
+}
+
+
+function createOutput() {
+    var output = "Sesordle ";
+    output += Math.floor(dayOffset) + " ";
+    output += (guess_count-1)+"/8\n";
+    var counter = 1;
+    // iterate through all tiles in the guess grid
+    for (var i = 0; i < guess_grid.children.length; i++) {
+        var tile = guess_grid.children[i];
+        if (tile.dataset.state != undefined) {
+            if (tile.dataset.state == "correct") {
+                output += "🟩";
+            } else if (tile.dataset.state == "wrong") {
+                output += "⬛";
+            } else if (tile.dataset.state == "wrong-location") {
+                output += "🟨";
+            }
+        }
+        if (counter == 6 && guess_grid.children[i+1].dataset.state != undefined) {
+            output += "\n";
+            counter = 1;
+        }
+        else {
+        counter ++;
+        }
+    }    
+
+    return output;
+}
+
+function copyToClipboard (text) {
+    clipboard.writeText(text);
+}
 
 function startInteraction () {
     document.addEventListener("keydown", handleKeyPress);
@@ -69,9 +111,17 @@ function submitGuess () {
     const guess = activeTiles.reduce((word, tile) => {
         return word + tile.dataset.letter
     }, "")
-    console.log(guess)
     stopInteraction()
-    activeTiles.forEach((...params) => flipTiles(...params, guess))
+    let letterCount = {};
+    for (let i = 0; i < guess.length; i++) {
+        if (letterCount[targetWord[i]]) {
+            letterCount[targetWord[i]] += 1;
+        }
+        else {
+            letterCount[targetWord[i]] = 1;
+        }
+    }
+    activeTiles.forEach((...params) => flipTiles(...params, guess, letterCount))
     guess_count++;
     
 }
@@ -105,21 +155,30 @@ function shakeTiles(tiles) {
     });
 }
 
-function flipTiles (tile, index, array, guess) {
+function flipTiles (tile, index, array, guess, lc) {
     const letter = tile.dataset.letter;
     setTimeout(() => {
         tile.classList.add("flip")
     }, (index*500)/2);
 
+
+
+
     tile.addEventListener("transitionend", () => {
         tile.classList.remove("flip")
         if (targetWord[index] === letter) {
             tile.dataset.state = "correct"
-        } else if (targetWord.includes(letter)) {
+            lc[letter] -= 1;
+        } 
+
+        if (tile.dataset.state !== "correct") {
+        if (targetWord.includes(letter) && lc[letter] > 0) {
             tile.dataset.state = "wrong-location"
-        } else {
+            lc[letter] -= 1;
+        } else  {
             tile.dataset.state = "wrong"
         }
+    }
 
         if (index === array.length - 1) {
             tile.addEventListener("transitionend", () => {
@@ -129,15 +188,21 @@ function flipTiles (tile, index, array, guess) {
         }
     },  {once: true});
 
+
+
 }
 
 function checkWinLose(guess, tiles) {
     if (guess == targetWord) {
-        showAlert("You win!",5000)
+        showAlert("You win!",1000)
         danceTiles(tiles)
         stopInteraction()
+        win = true;
+        setTimeout(() => {
+            showStats();
         return
-    }
+    }, 1400);
+}
 }
 
 function danceTiles(tiles) {
