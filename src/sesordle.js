@@ -1,4 +1,4 @@
-
+const _path = require('path');
 
 const alertContainer = document.querySelector("[data-alert-container]")
 const guess_grid = document.querySelector("[data-guess-grid]")

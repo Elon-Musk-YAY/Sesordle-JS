@@ -18,7 +18,8 @@ const createWindow = () => {
     show: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      devTools: !app.isPackaged
     }
   });
   mainWindow.once('ready-to-show', () => {
