@@ -85,11 +85,46 @@ body {
   z-index: 100;
   animation: slideIn 0.25s ease-in-out;
   text-align: center;
+  overflow: auto;
+}
+
+#statistics {
+  display: flex;
 }
 
 
+#stat-container-played, #stat-container-win-per, #stat-container-cur-streak, #stat-container-max-streak {
+  flex: 1;
+}
+
+#stat {
+  font-size: 36px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  letter-spacing: 0.05em;
+  font-variant-numeric: proportional-nums;
+}
+
+
+#label {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 #stats_top {
-  margin-top: 40px;
+  margin-top: 30px;
+  font-weight: 700;
+    font-size: 25px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 10px;
 }
 #s2.hide {
   animation: slideOut 0.25s ease-in-out;

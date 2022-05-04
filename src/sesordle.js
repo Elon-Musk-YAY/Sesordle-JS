@@ -1,8 +1,11 @@
+
+
 const alertContainer = document.querySelector("[data-alert-container]")
 const guess_grid = document.querySelector("[data-guess-grid]")
 const targetWords = ["tromie", "boxers"]
 var guess_count = 1;
 var win = false;
+var lose = false;
 const {clipboard} = require('electron');
 
 const offsetFromDate = new Date(2022,4,3)
@@ -11,19 +14,67 @@ const dayOffset = msOffset / 1000 / 60 / 60 / 24
 const targetWord = targetWords[Math.floor(dayOffset)]
 const stats_screen = document.getElementById("stats_screen");
 const s2 = document.getElementById("s2");
-
+const played_div = document.querySelector("#stat-container-played #stat");
+const per_div = document.querySelector("#stat-container-win-per #stat");
+const ms_div = document.querySelector("#stat-container-max-streak #stat");
+const cs_div = document.querySelector("#stat-container-cur-streak #stat");
 document.getElementById("stats-button").onclick = showStats;
 stats_screen.addEventListener("click", hideStats);
-var x;
-var y;
+var x, y;
+
+var played, win_per, cur_strk, max_strk, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, guess_7, guess_8;
+played = 0;
+win_per = 0;
+cur_strk = 0;
+max_strk = 0;
+guess_1 = 0;
+guess_2 = 0;
+guess_3 = 0;
+guess_4 = 0;
+guess_5 = 0;
+guess_6 = 0;
+guess_7 = 0;
+guess_8 = 0;
+
+played_div.textContent = played;
+per_div.textContent = win_per+"%";
+ms_div.textContent = max_strk;
+cs_div.textContent = cur_strk;
 onmousedown = function(e){
     x = e.clientX;
     y = e.clientY;
 }
 function showStats()
-{
+{   
+    s2.style.display = "block";
     stats_screen.style.display = "block";
-    console.log(createOutput());
+    console.log(createOutput())
+}
+
+function importData () {
+
+}
+
+function exportData (data) {
+}
+
+
+function calculateWinPercentage () {
+    var total = played;
+    var correct = guess_1 + guess_2 + guess_3 + guess_4 + guess_5 + guess_6 + guess_7 + guess_8;
+    if (total == 0) {
+        return 0;
+    }
+    var win_per = (correct/total)*100;
+    return win_per;
+}
+
+function updateStats () {
+    played_div.textContent = played;
+per_div.textContent = win_per+"%";
+ms_div.textContent = max_strk;
+cs_div.textContent = cur_strk;
+
 }
 
 
@@ -31,14 +82,20 @@ function hideStats() {
     if ((x <= 494 || x >= 944)) {
         s2.classList.add("hide");
         s2.addEventListener("animationend", () => {
-            stats_screen.style.display = "none";
+            setTimeout(() => {
+                stats_screen.style.display = "none";
+            }, 200);
+            s2.style.display = "none";
             s2.classList.remove("hide");
         }, {once: true});
     }
-    else if (y <= 100 || y >= 600) {
-        s2.classList.remove("add");
+     if (y <= 190 || y >= 690) {
+        s2.classList.add("hide");
         s2.addEventListener("animationend", () => {
-            stats_screen.style.display = "none";
+            setTimeout(() => {
+                stats_screen.style.display = "none";
+            }, 200);
+            s2.style.display = "none";
             s2.classList.remove("hide");
 
         }, {once: true});
@@ -51,7 +108,12 @@ function hideStats() {
 function createOutput() {
     var output = "Sesordle ";
     output += Math.floor(dayOffset) + " ";
+    if (win) {
     output += (guess_count-1)+"/8\n";
+    }
+    else if (lose) {
+        output += "X/8\n";
+    }
     var counter = 1;
     // iterate through all tiles in the guess grid
     for (var i = 0; i < guess_grid.children.length; i++) {
@@ -222,16 +284,77 @@ function flipTiles (tile, index, array, guess, lc) {
 
 function checkWinLose(guess, tiles) {
     if (guess == targetWord) {
-        showAlert("You win!",1000)
+        switch (guess_count) {
+            case 2:
+                showAlert("Genius!",1000)
+                guess_1++;
+                break;
+            case 3:
+                showAlert("Master!",1000)
+                guess_2++;
+                break;
+            case 4:
+                showAlert("Expert!",1000)
+                guess_3++;
+                break;
+            case 5:
+                showAlert("Pro!",1000)
+                guess_4++;
+                break;
+            case 6:
+                showAlert("Whew!",1000)
+                guess_5++;
+                break;
+            case 7:
+                showAlert("Phew!",1000)
+                guess_6++;
+                break;
+            case 8:
+                showAlert("So Close!",1000)
+                guess_7++;
+                break;
+            case 9:
+                showAlert("Too Close!",1000)
+                guess_8++;
+                break;
+        }
+        win = true;
+        played++
+        cur_strk++;
+        win_per = calculateWinPercentage();
+        if (cur_strk > max_strk) {
+            max_strk = cur_strk;
+        }
+        updateStats();
+    } else if (guess_count == 9) {
+            showAlert(targetWord.toUpperCase(),1000)
+            win = false;
+            lose = true;
+            stopInteraction()
+            setTimeout(() => {
+                showStats();
+            return
+        }, 1700);
+        played = 0;
+        cur_strk = 0;
+        win_per = calculateWinPercentage();
+        if (cur_strk > max_strk) {
+            max_strk = cur_strk;
+        }
+        updateStats();
+        return;
+     }
+    if (win) {
+    
         danceTiles(tiles)
         stopInteraction()
-        win = true;
         setTimeout(() => {
             showStats();
         return
     }, 1400);
 }
 }
+
 
 function danceTiles(tiles) {
     tiles.forEach((tile, index) => {
