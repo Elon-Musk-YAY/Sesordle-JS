@@ -1,6 +1,6 @@
 const alertContainer = document.querySelector("[data-alert-container]")
 const guess_grid = document.querySelector("[data-guess-grid]")
-const targetWords = ["tromie"]
+const targetWords = ["tromie", "boxers"]
 var guess_count = 1;
 var win = false;
 const {clipboard} = require('electron');
@@ -9,14 +9,42 @@ const offsetFromDate = new Date(2022,4,3)
 const msOffset = Date.now() - offsetFromDate
 const dayOffset = msOffset / 1000 / 60 / 60 / 24
 const targetWord = targetWords[Math.floor(dayOffset)]
+const stats_screen = document.getElementById("stats_screen");
+const s2 = document.getElementById("s2");
 
 document.getElementById("stats-button").onclick = showStats;
-
+stats_screen.addEventListener("click", hideStats);
+var x;
+var y;
+onmousedown = function(e){
+    x = e.clientX;
+    y = e.clientY;
+}
 function showStats()
 {
-    console.log("ran");
-    let out = createOutput();
-    copyToClipboard(out);
+    stats_screen.style.display = "block";
+    console.log(createOutput());
+}
+
+
+function hideStats() {
+    if ((x <= 494 || x >= 944)) {
+        s2.classList.add("hide");
+        s2.addEventListener("animationend", () => {
+            stats_screen.style.display = "none";
+            s2.classList.remove("hide");
+        }, {once: true});
+    }
+    else if (y <= 100 || y >= 600) {
+        s2.classList.remove("add");
+        s2.addEventListener("animationend", () => {
+            stats_screen.style.display = "none";
+            s2.classList.remove("hide");
+
+        }, {once: true});
+    }
+    x = 0;
+    y = 0;
 }
 
 
