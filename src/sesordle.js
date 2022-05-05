@@ -9,11 +9,16 @@ var win = false;
 var lose = false;
 const {clipboard} = require('electron');
 const json_file = require(`${__dirname}/data.json`);
-
-
+let nex_tim = document.getElementById("nex");
+let letterCount;
 const offsetFromDate = new Date(2022,4,2)
 const msOffset = Date.now() - offsetFromDate
 const dayOffset = msOffset / 1000 / 60 / 60 / 24
+var nextDay = new Date();
+nextDay.setDate(nextDay.getDate() + 1);
+nextDay.setMinutes(0);
+nextDay.setSeconds(0);
+nextDay.setHours(0);
 const targetWord = targetWords[Math.floor(dayOffset)]
 const stats_screen = document.getElementById("stats_screen");
 const s2 = document.getElementById("s2");
@@ -21,9 +26,12 @@ const played_div = document.querySelector("#stat-container-played #stat");
 const per_div = document.querySelector("#stat-container-win-per #stat");
 const ms_div = document.querySelector("#stat-container-max-streak #stat");
 const cs_div = document.querySelector("#stat-container-cur-streak #stat");
+const distrib_div = document.querySelector("#distribs");
 document.getElementById("stats-button").onclick = showStats;
 stats_screen.addEventListener("click", hideStats);
 var x, y;
+var share_btn = document.getElementById("share");
+share_btn.onclick = copyToClipboard;
 
 var played, win_per, cur_strk, max_strk, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, guess_7, guess_8, has_played;
 played = 0;
@@ -50,9 +58,51 @@ var guess_grid_json = [
     [],
 ]
 
+function getLengthOfJson() {
+    var length = 0;
+    for (var i in json_file) {
+        if (i != []) {
+            length++;
+        }
+    }
+}
+
+function updateTimer () {
+    var currentTime = new Date();
+    var hours = nextDay.getHours() - (currentTime.getHours()-23);
+    var minutes = nextDay.getMinutes() - (currentTime.getMinutes()-59);
+    var seconds = nextDay.getSeconds() - (currentTime.getSeconds()-59);
+    if (hours == 0 && minutes == 0 && seconds == 0) {
+        clearInterval(updateTimer)
+    };
+    if (seconds == 60) {
+        seconds = 0;
+        minutes ++;
+    }
+    if (minutes == 60) {
+        minutes = 0;
+        hours ++;
+    }
+    if (seconds < 10) {
+        seconds = "0"+seconds;
+    }
+    if (minutes < 10) {
+        minutes = "0"+minutes;
+    }
+    if (hours < 10) {
+        hours = "0"+hours;
+    }
+    nex_tim.textContent = `${hours}:${minutes}:${seconds}`;
+}
+
+var timerUpdate = setInterval(updateTimer, 1000);
+
 function importData () {
     if (json_file.played) {
         guess_grid_json = json_file.played_letter;
+        // for (let i = 0; i< getLengthOfJson()*6; i++) {
+        //     guess_grid.children[i].dataset.letter = guess_grid_json[i];
+        // }
     }
     played = json_file.played_count;
     win_per = json_file.percent;
@@ -78,7 +128,17 @@ function importData () {
             win = false;
             lose = false;
             has_played = false;
-            guess_grid_json = [];
+            guess_grid_json = [
+                [],
+                [],
+                [],
+                [],
+
+                [],
+                [],
+                [],
+                [],
+            ];
 
         }
         exportData();
@@ -103,6 +163,7 @@ function exportData () {
     json_file.win = win;
     json_file.lose = lose;
     json_file.played = has_played;
+    console.log(json_file);
     fs.writeFile(`${__dirname}/data.json`, JSON.stringify(json_file, null, "\t"), (err) => {
         if (err) console.log(err);
     });
@@ -131,7 +192,7 @@ function calculateWinPercentage () {
     if (total == 0) {
         return 0;
     }
-    var win_per = (correct/total)*100;
+    var win_per = Math.round((correct/total)*100);
     return win_per;
 }
 
@@ -140,6 +201,23 @@ function updateStats () {
     per_div.textContent = win_per+"%";
     ms_div.textContent = max_strk;
     cs_div.textContent = cur_strk;
+    if (win || lose) {
+        document.getElementById("foot").style.display = "";
+    }
+    else {
+        document.getElementById("foot").style.display = "none";
+    }
+    distrib_div.children[0].textContent = '1: '+guess_1;
+    distrib_div.children[1].textContent = '2: '+guess_2;
+    distrib_div.children[2].textContent = '3: '+guess_3;
+    distrib_div.children[3].textContent = '4: '+guess_4;
+    distrib_div.children[4].textContent = '5: '+guess_5;
+    distrib_div.children[5].textContent = '6: '+guess_6;
+    distrib_div.children[6].textContent = '7: '+guess_7;
+    distrib_div.children[7].textContent = '8: '+guess_8;
+    if (win) {
+    distrib_div.children[guess_count-2].style.color = "rgb(0,230,0)";
+    }
 
 }
 
@@ -181,7 +259,6 @@ function createOutput() {
         output += "X/8\n";
     }
     var counter = 1;
-    // iterate through all tiles in the guess grid
     for (var i = 0; i < guess_grid.children.length; i++) {
         var tile = guess_grid.children[i];
         if (tile.dataset.state != undefined) {
@@ -205,8 +282,9 @@ function createOutput() {
     return output;
 }
 
-function copyToClipboard (text) {
-    clipboard.writeText(text);
+function copyToClipboard () {
+    clipboard.writeText(createOutput());
+    showAlert("Copied to clipboard!");
 }
 
 function startInteraction () {
@@ -231,7 +309,7 @@ function pressKey(key) {
       deleteKey();
       return;
     }
-    if (e.key.match(/^[a-z]$/)) {
+    if (e.key.toLowerCase().match(/^[a-z]$/)) {
       pressKey(e.key);
       return;
     }
@@ -272,7 +350,7 @@ function submitGuess () {
         has_played = true;
     }
         
-    let letterCount = {};
+    letterCount = {};
     for (let i = 0; i < guess.length; i++) {
         if (letterCount[targetWord[i]]) {
             letterCount[targetWord[i]] += 1;
@@ -283,6 +361,7 @@ function submitGuess () {
     }
     activeTiles.forEach((...params) => flipTiles(...params, guess, letterCount))
     guess_count++;
+    exportData();
 
 }
     
@@ -326,6 +405,7 @@ function flipTiles (tile, index, array, guess, lc) {
 
     tile.addEventListener("transitionend", () => {
         tile.classList.remove("flip")
+        /// check if all are correct first to fix bug
         if (targetWord[index] === letter) {
             tile.dataset.state = "correct"
             lc[letter] -= 1;
@@ -347,7 +427,6 @@ function flipTiles (tile, index, array, guess, lc) {
             }, {once: true});
         }
     },  {once: true});
-    console.log(index);
     guess_grid_json[guess_count-1][index] = letter;
 
 
@@ -407,7 +486,7 @@ function checkWinLose(guess, tiles) {
                 showStats();
             return
         }, 1700);
-        played = 0;
+        played++;
         cur_strk = 0;
         win_per = calculateWinPercentage();
         if (cur_strk > max_strk) {
@@ -442,4 +521,5 @@ function danceTiles(tiles) {
 
 startInteraction();
 importData();
+
 updateStats();

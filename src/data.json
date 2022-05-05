@@ -1,5 +1,5 @@
 {
-	"day": 2,
+	"day": 3,
 	"guess_1": 1,
 	"guess_2": 0,
 	"guess_3": 0,
@@ -11,10 +11,32 @@
 	"lose": false,
 	"max_streak": 1,
 	"percent": 100,
-	"played": false,
+	"played": true,
 	"played_count": 1,
 	"played_letter": [
-    ],
+		[
+			"a",
+			"a",
+			"a",
+			"a",
+			"a",
+			"a"
+		],
+		[
+			"a",
+			"a",
+			"a",
+			"a",
+			"a",
+			"a"
+		],
+		[],
+		[],
+		[],
+		[],
+		[],
+		[]
+	],
 	"streak": 1,
 	"win": false
 }

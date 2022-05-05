@@ -117,7 +117,46 @@ body {
   text-align: center;
 }
 
-#stats_top {
+#distribs {
+  text-align: left;
+  margin-left: 50px;
+  font-size: 20px;
+}
+
+#sep {
+  border: none;
+  background: white;
+}
+
+#nex {
+  color: white;
+  font-size: 27px;
+}
+
+#next {
+  margin-top: -80px;
+  margin-left: -180px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+#share {
+  background:hsl(115, 29%, 43%);
+  border-radius: 8px;
+  border: none;
+  color: white;
+  font-size: 20px;
+  width: 200px;
+  height: 80px;
+  margin-right: -190px;
+}
+
+#share:hover {
+  background:hsl(114, 42%, 59%);
+}
+
+
+#stats_top, #distrib_top {
   margin-top: 30px;
   font-weight: 700;
     font-size: 25px;
