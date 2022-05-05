@@ -1,14 +1,17 @@
 const _path = require('path');
+const fs = require('fs');
 
 const alertContainer = document.querySelector("[data-alert-container]")
 const guess_grid = document.querySelector("[data-guess-grid]")
-const targetWords = ["tromie", "boxers"]
+const targetWords = ["tromie", "boxers", "yeeter", "yeeter"]
 var guess_count = 1;
 var win = false;
 var lose = false;
 const {clipboard} = require('electron');
+const json_file = require(`${__dirname}/data.json`);
 
-const offsetFromDate = new Date(2022,4,3)
+
+const offsetFromDate = new Date(2022,4,2)
 const msOffset = Date.now() - offsetFromDate
 const dayOffset = msOffset / 1000 / 60 / 60 / 24
 const targetWord = targetWords[Math.floor(dayOffset)]
@@ -22,7 +25,7 @@ document.getElementById("stats-button").onclick = showStats;
 stats_screen.addEventListener("click", hideStats);
 var x, y;
 
-var played, win_per, cur_strk, max_strk, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, guess_7, guess_8;
+var played, win_per, cur_strk, max_strk, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, guess_7, guess_8, has_played;
 played = 0;
 win_per = 0;
 cur_strk = 0;
@@ -35,11 +38,78 @@ guess_5 = 0;
 guess_6 = 0;
 guess_7 = 0;
 guess_8 = 0;
+has_played = false;
+var guess_grid_json = [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+]
 
-played_div.textContent = played;
-per_div.textContent = win_per+"%";
-ms_div.textContent = max_strk;
-cs_div.textContent = cur_strk;
+function importData () {
+    if (json_file.played) {
+        guess_grid_json = json_file.played_letter;
+    }
+    played = json_file.played_count;
+    win_per = json_file.percent;
+    cur_strk = json_file.streak;
+    max_strk = json_file.max_streak;
+    guess_1 = json_file.guess_1;
+    guess_2 = json_file.guess_2;
+    guess_3 = json_file.guess_3;
+    guess_4 = json_file.guess_4;
+    guess_5 = json_file.guess_5;
+    guess_6 = json_file.guess_6;
+    guess_7 = json_file.guess_7;
+    guess_8 = json_file.guess_8;
+    if (Math.floor(dayOffset) > json_file.day+1) {
+        if (cur_strk > max_strk) {
+            max_strk = cur_strk;
+        }
+        cur_strk = 0;
+        exportData();
+    }
+    else if (Math.floor(dayOffset) > json_file.day) {
+        if (cur_strk > max_strk) {
+            win = false;
+            lose = false;
+            has_played = false;
+            guess_grid_json = [];
+
+        }
+        exportData();
+    }
+}
+
+function exportData () {
+    json_file.played_count = played;
+    json_file.percent = win_per;
+    json_file.streak = cur_strk;
+    json_file.max_streak = max_strk;
+    json_file.guess_1 = guess_1;
+    json_file.guess_2 = guess_2;
+    json_file.guess_3 = guess_3;
+    json_file.guess_4 = guess_4;
+    json_file.guess_5 = guess_5;
+    json_file.guess_6 = guess_6;
+    json_file.guess_7 = guess_7;
+    json_file.guess_8 = guess_8;
+    json_file.day = Math.floor(dayOffset);
+    json_file.played_letter = guess_grid_json;
+    json_file.win = win;
+    json_file.lose = lose;
+    json_file.played = has_played;
+    fs.writeFile(`${__dirname}/data.json`, JSON.stringify(json_file, null, "\t"), (err) => {
+        if (err) console.log(err);
+    });
+}
+
+
+
 onmousedown = function(e){
     x = e.clientX;
     y = e.clientY;
@@ -48,15 +118,11 @@ function showStats()
 {   
     s2.style.display = "block";
     stats_screen.style.display = "block";
-    console.log(createOutput())
 }
 
-function importData () {
 
-}
 
-function exportData (data) {
-}
+
 
 
 function calculateWinPercentage () {
@@ -71,9 +137,9 @@ function calculateWinPercentage () {
 
 function updateStats () {
     played_div.textContent = played;
-per_div.textContent = win_per+"%";
-ms_div.textContent = max_strk;
-cs_div.textContent = cur_strk;
+    per_div.textContent = win_per+"%";
+    ms_div.textContent = max_strk;
+    cs_div.textContent = cur_strk;
 
 }
 
@@ -202,6 +268,10 @@ function submitGuess () {
         return word + tile.dataset.letter
     }, "")
     stopInteraction()
+    if (!has_played) {
+        has_played = true;
+    }
+        
     let letterCount = {};
     for (let i = 0; i < guess.length; i++) {
         if (letterCount[targetWord[i]]) {
@@ -213,13 +283,13 @@ function submitGuess () {
     }
     activeTiles.forEach((...params) => flipTiles(...params, guess, letterCount))
     guess_count++;
+
+}
     
-}
 
 
-function createAndCopyOutput  () {
 
-}
+
 
 function showAlert(message, duration = 1000) {
     const alert = document.createElement("div");
@@ -277,6 +347,8 @@ function flipTiles (tile, index, array, guess, lc) {
             }, {once: true});
         }
     },  {once: true});
+    console.log(index);
+    guess_grid_json[guess_count-1][index] = letter;
 
 
 
@@ -369,3 +441,5 @@ function danceTiles(tiles) {
 
 
 startInteraction();
+importData();
+updateStats();
