@@ -1,6 +1,6 @@
 {
-	"day": 3,
-	"guess_1": 1,
+	"day": 4,
+	"guess_1": 5,
 	"guess_2": 0,
 	"guess_3": 0,
 	"guess_4": 0,
@@ -9,24 +9,27 @@
 	"guess_7": 0,
 	"guess_8": 0,
 	"lose": false,
-	"max_streak": 1,
+	"max_streak": 5,
 	"percent": 100,
 	"played": true,
-	"played_count": 1,
+	"played_count": 5,
 	"played_letter": [
 		[
+			"u",
+			"n",
+			"w",
+			"e",
+			"l",
+			"l"
 		],
-		[
-		],
-		[
-
-        ],
+		[],
+		[],
 		[],
 		[],
 		[],
 		[],
 		[]
 	],
-	"streak": 1,
-	"win": false
+	"streak": 5,
+	"win": true
 }

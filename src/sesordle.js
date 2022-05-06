@@ -1,9 +1,15 @@
 const _path = require('path');
 const fs = require('fs');
 
+
+/*
+* Created by Akshar Desai on 5/6/2022.
+*
+*/
+
 const alertContainer = document.querySelector("[data-alert-container]")
 const guess_grid = document.querySelector("[data-guess-grid]")
-const targetWords = ["tromie", "boxers", "yeeter", "yeeter"]
+const targetWords = ['tromie', 'pseudo', 'pepper', 'cuckoo', 'unwell', 'filter', 'pastie', 'dinner', 'gentry', 'forget', 'across', 'outlet', 'colony', 'abroad', 'justly', 'presto', 'decade', 'minnow', 'taught', 'unison', 'rocket', 'drinks', 'tomato', 'indent', 'demand', 'steamy', 'amuser', 'paving', 'single', 'liable', 'damned', 'signal', 'shabby', 'months', 'bluish', 'wilted', 'staple', 'shield', 'bounce', 'ocular', 'ringer', 'manage', 'lithic', 'babies', 'cloaks', 'harley', 'common', 'giblet', 'sponge', 'sample', 'trifle', 'pelite', 'alfred', 'coyote', 'bishop', 'allude', 'female', 'loosen', 'martha', 'zambia', 'anthem', 'masses', 'petrel', 'borrow', 'leader', 'marton', 'barkis', 'depict', 'slovak', 'planet', 'brooks', 'laptop', 'exhort', 'oxford', 'impact', 'vacuum', 'archan', 'nature', 'tryfan', 'amedei', 'tigger', 'pallid', 'citril', 'shoddy', 'duplex', 'proves', 'roster', 'wooler', 'sodium', 'nuptse', 'tingly', 'thirty', 'beetle', 'durham', 'basalt', 'banked', 'uptown', 'thrill', 'wretch', 'curtsy', 'exeter', 'brainy', 'queens', 'quiver', 'deftly', 'obiwan', 'handed', 'buzzer', 'foyers', 'sudoku', 'towhee', 'enrage', 'breast', 'powder', 'scalby', 'cosine', 'wicked', 'haggis', 'aflame', 'coffee', 'upward', 'kodiak', 'pacify', 'throat', 'wellow', 'feeder', 'flight', 'wilson', 'chopin', 'rescue', 'yawler', 'tirade', 'graves', 'reflex', 'peeved', 'soccer', 'wrymug', 'client', 'joyous', 'google', 'laying', 'elidir', 'hannah', 'ladder', 'appeal', 'impede', 'almond', 'connie', 'bucket', 'ascend', 'dicing', 'manuka', 'butter', 'clumsy', 'ankles', 'fossil', 'hinney', 'hunter', 'infirm', 'yorkie', 'dibabs', 'clinic', 'nitric', 'vulcan', 'narrow', 'sarnia', 'strake', 'mumbai', 'system', 'shower', 'launch', 'search', 'skiing', 'tissue', 'carton', 'ogmore', 'belong', 'utmost', 'island', 'winkle', 'smoked', 'yonder', 'object']
 var guess_count = 1;
 var win = false;
 var lose = false;
@@ -102,6 +108,7 @@ function importData () {
     if (json_file.played) {
         guess_grid_json = json_file.played_letter;
         var length = getLengthOfJson();
+        guess_count = getLengthOfJson()+1;
         if (length >= 1) {
             guess_grid.children[0].dataset.letter = guess_grid_json[0][0];
             guess_grid.children[0].textContent = guess_grid_json[0][0];
@@ -272,6 +279,8 @@ function importData () {
     guess_6 = json_file.guess_6;
     guess_7 = json_file.guess_7;
     guess_8 = json_file.guess_8;
+    win = json_file.win;
+    lose = json_file.lose;
     if (Math.floor(dayOffset) > json_file.day+1) {
         if (cur_strk > max_strk) {
             max_strk = cur_strk;
@@ -280,7 +289,6 @@ function importData () {
         exportData();
     }
     else if (Math.floor(dayOffset) > json_file.day) {
-        if (cur_strk > max_strk) {
             win = false;
             lose = false;
             has_played = false;
@@ -296,7 +304,6 @@ function importData () {
                 [],
             ];
 
-        }
         exportData();
     }
 }
@@ -517,7 +524,6 @@ function submitGuess () {
     }
     activeTiles.forEach((...params) => flipTiles(...params, guess, letterCount))
     guess_count++;
-    exportData();
 
 }
     
@@ -660,6 +666,7 @@ function checkWinLose(guess, tiles) {
         return
     }, 1400);
 }
+exportData();
 }
 
 
@@ -677,5 +684,7 @@ function danceTiles(tiles) {
 
 startInteraction();
 importData();
-
+if (win || lose) {
+    stopInteraction();
+}
 updateStats();
