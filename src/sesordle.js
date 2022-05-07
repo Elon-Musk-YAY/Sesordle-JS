@@ -16,7 +16,6 @@ var lose = false;
 const {clipboard} = require('electron');
 const json_file = require(`${__dirname}/data.json`);
 let nex_tim = document.getElementById("nex");
-let letterCount;
 const offsetFromDate = new Date(2022,4,2)
 const msOffset = Date.now() - offsetFromDate
 const dayOffset = msOffset / 1000 / 60 / 60 / 24
@@ -66,7 +65,7 @@ var guess_grid_json = [
 
 function getLengthOfJson() {
     var length = 0;
-    for (let i = 0; i<6; i++) {
+    for (let i = 0; i<8; i++) {
         if (guess_grid_json[i].length > 0) {
             length++;
         }
@@ -104,169 +103,35 @@ function updateTimer () {
 
 var timerUpdate = setInterval(updateTimer, 1000);
 
-function importData () {
-    if (json_file.played) {
-        guess_grid_json = json_file.played_letter;
-        var length = getLengthOfJson();
-        guess_count = getLengthOfJson()+1;
-        if (length >= 1) {
-            guess_grid.children[0].dataset.letter = guess_grid_json[0][0];
-            guess_grid.children[0].textContent = guess_grid_json[0][0];
+function removeByIndex(str,index) {
+    return str.slice(0,index) + str.slice(index+1);
+}
 
-            guess_grid.children[1].dataset.letter = guess_grid_json[0][1];
-            guess_grid.children[1].textContent = guess_grid_json[0][1];
-
-            guess_grid.children[2].dataset.letter = guess_grid_json[0][2];
-            guess_grid.children[2].textContent = guess_grid_json[0][2];
-
-            guess_grid.children[3].dataset.letter = guess_grid_json[0][3];
-            guess_grid.children[3].textContent = guess_grid_json[0][3];
-
-            guess_grid.children[4].dataset.letter = guess_grid_json[0][4];
-            guess_grid.children[4].textContent = guess_grid_json[0][4];
-
-            guess_grid.children[5].dataset.letter = guess_grid_json[0][5];
-            guess_grid.children[5].textContent = guess_grid_json[0][5];
+function calculateResult (index, guess) {
+    var temp = targetWord;
+    var out = [];
+    // check correct letters
+    for (let i = 0; i<6; i++) {
+        if (targetWord[i] == guess[i]) {
+            out[i] = "correct";
+            temp = removeByIndex(temp, temp.indexOf(guess[i]));
         }
-        if (length >= 2) {
-            guess_grid.children[6].dataset.letter = guess_grid_json[1][0];
-            guess_grid.children[6].textContent = guess_grid_json[1][0];
-
-            guess_grid.children[7].dataset.letter = guess_grid_json[1][1];
-            guess_grid.children[7].textContent = guess_grid_json[1][1];
-
-            guess_grid.children[8].dataset.letter = guess_grid_json[1][2];
-            guess_grid.children[8].textContent = guess_grid_json[1][2];
-
-            guess_grid.children[9].dataset.letter = guess_grid_json[1][3];
-            guess_grid.children[9].textContent = guess_grid_json[1][3];
-
-            guess_grid.children[10].dataset.letter = guess_grid_json[1][4];
-            guess_grid.children[10].textContent = guess_grid_json[1][4];
-
-            guess_grid.children[11].dataset.letter = guess_grid_json[1][5];
-            guess_grid.children[11].textContent = guess_grid_json[1][5];
-
+    }
+    for (let i = 0; i<6; i++) {
+        if (temp.includes(guess[i]) && out[i] != "correct") {
+            out[i] = "wrong-location";
+            temp = removeByIndex(temp, temp.indexOf(guess[i]));
         }
-
-        if (length >= 3) {
-            guess_grid.children[12].dataset.letter = guess_grid_json[2][0];
-            guess_grid.children[12].textContent = guess_grid_json[2][0];
-
-            guess_grid.children[13].dataset.letter = guess_grid_json[2][1];
-            guess_grid.children[13].textContent = guess_grid_json[2][1];
-
-            guess_grid.children[14].dataset.letter = guess_grid_json[2][2];
-            guess_grid.children[14].textContent = guess_grid_json[2][2];
-
-            guess_grid.children[15].dataset.letter = guess_grid_json[2][3];
-            guess_grid.children[15].textContent = guess_grid_json[2][3];
-
-            guess_grid.children[16].dataset.letter = guess_grid_json[2][4];
-            guess_grid.children[16].textContent = guess_grid_json[2][4];
-
-            guess_grid.children[17].dataset.letter = guess_grid_json[2][5];
-            guess_grid.children[17].textContent = guess_grid_json[2][5];
-
+        else if (out[i] != "correct")  {
+            out[i] = "wrong";
         }
-        if (length >= 4) {
-            guess_grid.children[18].dataset.letter = guess_grid_json[3][0];
-            guess_grid.children[18].textContent = guess_grid_json[3][0];
-
-            guess_grid.children[19].dataset.letter = guess_grid_json[3][1];
-            guess_grid.children[19].textContent = guess_grid_json[3][1];
-
-            guess_grid.children[20].dataset.letter = guess_grid_json[3][2];
-            guess_grid.children[20].textContent = guess_grid_json[3][2];
-
-            guess_grid.children[21].dataset.letter = guess_grid_json[3][3];
-            guess_grid.children[21].textContent = guess_grid_json[3][3];
-
-            guess_grid.children[22].dataset.letter = guess_grid_json[3][4];
-            guess_grid.children[22].textContent = guess_grid_json[3][4];
-
-            guess_grid.children[23].dataset.letter = guess_grid_json[3][5];
-            guess_grid.children[23].textContent = guess_grid_json[3][5];
-        }
-        if (length >= 5) {
-            guess_grid.children[24].dataset.letter = guess_grid_json[4][0];
-            guess_grid.children[24].textContent = guess_grid_json[4][0];
-
-            guess_grid.children[25].dataset.letter = guess_grid_json[4][1];
-            guess_grid.children[25].textContent = guess_grid_json[4][1];
-
-            guess_grid.children[26].dataset.letter = guess_grid_json[4][2];
-            guess_grid.children[26].textContent = guess_grid_json[4][2];
-
-            guess_grid.children[27].dataset.letter = guess_grid_json[4][3];
-            guess_grid.children[27].textContent = guess_grid_json[4][3];
-
-            guess_grid.children[28].dataset.letter = guess_grid_json[4][4];
-            guess_grid.children[28].textContent = guess_grid_json[4][4];
-
-            guess_grid.children[29].dataset.letter = guess_grid_json[4][5];
-            guess_grid.children[29].textContent = guess_grid_json[4][5];
-        }
-        if (length >= 6) {
-            guess_grid.children[30].dataset.letter = guess_grid_json[5][0];
-            guess_grid.children[30].textContent = guess_grid_json[5][0];
-
-            guess_grid.children[31].dataset.letter = guess_grid_json[5][1];
-            guess_grid.children[31].textContent = guess_grid_json[5][1];
-
-            guess_grid.children[32].dataset.letter = guess_grid_json[5][2];
-            guess_grid.children[32].textContent = guess_grid_json[5][2];
-
-            guess_grid.children[33].dataset.letter = guess_grid_json[5][3];
-            guess_grid.children[33].textContent = guess_grid_json[5][3];
-
-            guess_grid.children[34].dataset.letter = guess_grid_json[5][4];
-            guess_grid.children[34].textContent = guess_grid_json[5][4];
-
-            guess_grid.children[35].dataset.letter = guess_grid_json[5][5];
-            guess_grid.children[35].textContent = guess_grid_json[5][5];
-        }
-        if (length >= 7) {
-            guess_grid.children[36].dataset.letter = guess_grid_json[6][0];
-            guess_grid.children[36].textContent = guess_grid_json[6][0];
-
-            guess_grid.children[37].dataset.letter = guess_grid_json[6][1];
-            guess_grid.children[37].textContent = guess_grid_json[6][1];
-
-            guess_grid.children[38].dataset.letter = guess_grid_json[6][2];
-            guess_grid.children[38].textContent = guess_grid_json[6][2];
-
-            guess_grid.children[39].dataset.letter = guess_grid_json[6][3];
-            guess_grid.children[39].textContent = guess_grid_json[6][3];
-
-            guess_grid.children[40].dataset.letter = guess_grid_json[6][4];
-            guess_grid.children[40].textContent = guess_grid_json[6][4];
-
-            guess_grid.children[41].dataset.letter = guess_grid_json[6][5];
-            guess_grid.children[41].textContent = guess_grid_json[6][5];
-        }
-        if (length >= 8) {
-            guess_grid.children[42].dataset.letter = guess_grid_json[7][0];
-            guess_grid.children[42].textContent = guess_grid_json[7][0];
-
-            guess_grid.children[43].dataset.letter = guess_grid_json[7][1];
-            guess_grid.children[43].textContent = guess_grid_json[7][1];
-
-            guess_grid.children[44].dataset.letter = guess_grid_json[7][2];
-            guess_grid.children[44].textContent = guess_grid_json[7][2];
-
-            guess_grid.children[45].dataset.letter = guess_grid_json[7][3];
-            guess_grid.children[45].textContent = guess_grid_json[7][3];
-
-            guess_grid.children[46].dataset.letter = guess_grid_json[7][4];
-            guess_grid.children[46].textContent = guess_grid_json[7][4];
-
-            guess_grid.children[47].dataset.letter = guess_grid_json[7][5];
-            guess_grid.children[47].textContent = guess_grid_json[7][5];
-        }
-
 
     }
+
+    return out[index];
+}
+
+function importData () {
     played = json_file.played_count;
     win_per = json_file.percent;
     cur_strk = json_file.streak;
@@ -281,6 +146,7 @@ function importData () {
     guess_8 = json_file.guess_8;
     win = json_file.win;
     lose = json_file.lose;
+
     if (Math.floor(dayOffset) > json_file.day+1) {
         if (cur_strk > max_strk) {
             max_strk = cur_strk;
@@ -306,6 +172,93 @@ function importData () {
 
         exportData();
     }
+    if (json_file.played) {
+        guess_grid_json = json_file.played_letter;
+        var length = getLengthOfJson();
+        guess_count = getLengthOfJson()+1;
+        if (length >= 1) {
+            let g = guess_grid_json[0][0]+guess_grid_json[0][1]+guess_grid_json[0][2]+guess_grid_json[0][3]+guess_grid_json[0][4]+guess_grid_json[0][5];
+
+            for (let i =0; i<6; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[0][i];
+                guess_grid.children[i].textContent = guess_grid_json[0][i];
+                guess_grid.children[i].dataset.state = calculateResult(i, g);
+            }
+        }
+        if (length >= 2) {
+
+            let g = guess_grid_json[1][0]+guess_grid_json[1][1]+guess_grid_json[1][2]+guess_grid_json[1][3]+guess_grid_json[1][4]+guess_grid_json[1][5];
+
+            for (let i =6; i<12; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[1][i-6];
+                guess_grid.children[i].textContent = guess_grid_json[1][i-6];
+                guess_grid.children[i].dataset.state = calculateResult(i-6, g);
+            }
+
+        }
+
+        if (length >= 3) {
+            let g = guess_grid_json[2][0]+guess_grid_json[2][1]+guess_grid_json[2][2]+guess_grid_json[2][3]+guess_grid_json[2][4]+guess_grid_json[2][5];
+
+            for (let i =12; i<18; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[2][i-12];
+                guess_grid.children[i].textContent = guess_grid_json[2][i-12];
+                guess_grid.children[i].dataset.state = calculateResult(i-12, g);
+            }
+        }
+        if (length >= 4) {
+            let g = guess_grid_json[3][0]+guess_grid_json[3][1]+guess_grid_json[3][2]+guess_grid_json[3][3]+guess_grid_json[3][4]+guess_grid_json[3][5];
+
+            for (let i =18; i<24; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[3][i-18];
+                guess_grid.children[i].textContent = guess_grid_json[3][i-18];
+                guess_grid.children[i].dataset.state = calculateResult(i-18, g);
+            }
+        }
+        if (length >= 5) {
+            let g = guess_grid_json[4][0]+guess_grid_json[4][1]+guess_grid_json[4][2]+guess_grid_json[4][3]+guess_grid_json[4][4]+guess_grid_json[4][5];
+
+            for (let i =24; i<30; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[4][i-24];
+                guess_grid.children[i].textContent = guess_grid_json[4][i-24];
+                guess_grid.children[i].dataset.state = calculateResult(i-24, g);
+            }
+        }
+        if (length >= 6) {
+            let g = guess_grid_json[5][0]+guess_grid_json[5][1]+guess_grid_json[5][2]+guess_grid_json[5][3]+guess_grid_json[5][4]+guess_grid_json[5][5];
+
+            for (let i =30; i<36; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[5][i-30];
+                guess_grid.children[i].textContent = guess_grid_json[5][i-30];
+                guess_grid.children[i].dataset.state = calculateResult(i-30, g);
+            }
+        }
+        if (length >= 7) {
+            let g = guess_grid_json[6][0]+guess_grid_json[6][1]+guess_grid_json[6][2]+guess_grid_json[6][3]+guess_grid_json[6][4]+guess_grid_json[6][5];
+            console.log(g);
+
+            for (let i =36; i<42; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[6][i-36];
+                guess_grid.children[i].textContent = guess_grid_json[6][i-36];
+                guess_grid.children[i].dataset.state = calculateResult(i-36, g);
+            }
+        }
+        if (length >= 8) {
+            let g = guess_grid_json[7][0]+guess_grid_json[7][1]+guess_grid_json[7][2]+guess_grid_json[7][3]+guess_grid_json[7][4]+guess_grid_json[7][5];
+
+            for (let i =42; i<48; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[7][i-42];
+                guess_grid.children[i].textContent = guess_grid_json[7][i-42];
+                guess_grid.children[i].dataset.state = calculateResult(i-42, g);
+            }
+        }
+
+
+    }
+
+    if (win || lose) {
+        setTimeout(showStats, 2000)
+    }
 }
 
 function exportData () {
@@ -326,7 +279,6 @@ function exportData () {
     json_file.win = win;
     json_file.lose = lose;
     json_file.played = has_played;
-    console.log(json_file);
     fs.writeFile(`${__dirname}/data.json`, JSON.stringify(json_file, null, "\t"), (err) => {
         if (err) console.log(err);
     });
@@ -379,7 +331,7 @@ function updateStats () {
     distrib_div.children[6].textContent = '7: '+guess_7;
     distrib_div.children[7].textContent = '8: '+guess_8;
     if (win) {
-    distrib_div.children[guess_count-2].style.color = "rgb(0,230,0)";
+    distrib_div.children[guess_count-2].style.color = "hsl(114, 42%, 59%)";
     }
 
 }
@@ -472,7 +424,7 @@ function pressKey(key) {
       deleteKey();
       return;
     }
-    if (e.key.toLowerCase().match(/^[a-z]$/)) {
+    if (e.key.match(/^[a-zA-Z]$/)) {
       pressKey(e.key);
       return;
     }
@@ -481,6 +433,11 @@ function pressKey(key) {
 
   function getActiveTiles() {
     return guess_grid.querySelectorAll("[data-state='active']")
+
+}
+
+function getGuessTiles() {
+    return [guess_grid.children[(guess_count-1)*6],guess_grid.children[(guess_count-1)*6+1],guess_grid.children[(guess_count-1)*6+2],guess_grid.children[(guess_count-1)*6+3],guess_grid.children[(guess_count-1)*6+4],guess_grid.children[(guess_count-1)*6+5]];
 }
   
   function stopInteraction () {
@@ -501,7 +458,7 @@ function submitGuess () {
     if (activeTiles.length < 6) {
      if (alertContainer.children.length <3){
         showAlert("Not enough letters")
-     shakeTiles(activeTiles)
+     shakeTiles([...getGuessTiles()]);
      }
     return
     }
@@ -512,17 +469,7 @@ function submitGuess () {
     if (!has_played) {
         has_played = true;
     }
-        
-    letterCount = {};
-    for (let i = 0; i < guess.length; i++) {
-        if (letterCount[targetWord[i]]) {
-            letterCount[targetWord[i]] += 1;
-        }
-        else {
-            letterCount[targetWord[i]] = 1;
-        }
-    }
-    activeTiles.forEach((...params) => flipTiles(...params, guess, letterCount))
+    activeTiles.forEach((...params) => flipTiles(...params, guess))
     guess_count++;
 
 }
@@ -538,12 +485,14 @@ function showAlert(message, duration = 1000) {
     alert.classList.add("alert");
     alertContainer.prepend(alert);
     if (duration == null) return 
+    if (duration != -1) {
     setTimeout(() => {
         alert.classList.add("hide")
         alert.addEventListener("transitionend", () => {
             alert.remove()
         });
     }, duration);
+}
     
 } 
 
@@ -556,7 +505,7 @@ function shakeTiles(tiles) {
     });
 }
 
-function flipTiles (tile, index, array, guess, lc) {
+function flipTiles (tile, index, array, guess) {
     const letter = tile.dataset.letter;
     setTimeout(() => {
         tile.classList.add("flip")
@@ -568,19 +517,9 @@ function flipTiles (tile, index, array, guess, lc) {
     tile.addEventListener("transitionend", () => {
         tile.classList.remove("flip")
         /// check if all are correct first to fix bug
-        if (targetWord[index] === letter) {
-            tile.dataset.state = "correct"
-            lc[letter] -= 1;
-        } 
+        tile.dataset.state = calculateResult(index, guess);
 
-        if (tile.dataset.state !== "correct") {
-        if (targetWord.includes(letter) && lc[letter] > 0) {
-            tile.dataset.state = "wrong-location"
-            lc[letter] -= 1;
-        } else  {
-            tile.dataset.state = "wrong"
-        }
-    }
+        
 
         if (index === array.length - 1) {
             tile.addEventListener("transitionend", () => {
@@ -640,7 +579,7 @@ function checkWinLose(guess, tiles) {
         }
         updateStats();
     } else if (guess_count == 9) {
-            showAlert(targetWord.toUpperCase(),1000)
+            showAlert(targetWord.toUpperCase(),-1)
             win = false;
             lose = true;
             stopInteraction()
