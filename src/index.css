@@ -198,6 +198,16 @@ body {
   margin-top: -50px;
 }
 
+
+.tile.fast {
+  transform: rotateX(90deg); 
+}
+
+.tile.expand {
+  transform: scale(1.05);
+  transition: transform 50ms linear;
+}
+
 .tile {
   font-size: 2em;
   color: white;
@@ -267,9 +277,6 @@ body {
   transform: rotateX(90deg); 
 }
 
-.tile.expand {
-  transform: scale(1.05);
-}
 
 
 .tile[data-state="active"] {

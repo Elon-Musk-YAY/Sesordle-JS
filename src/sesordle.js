@@ -9,7 +9,7 @@ const fs = require('fs');
 
 const alertContainer = document.querySelector("[data-alert-container]")
 const guess_grid = document.querySelector("[data-guess-grid]")
-const targetWords = ['tromie', 'pseudo', 'pepper', 'cuckoo', 'unwell', 'filter', 'pastie', 'dinner', 'gentry', 'forget', 'across', 'outlet', 'colony', 'abroad', 'justly', 'presto', 'decade', 'minnow', 'taught', 'unison', 'rocket', 'drinks', 'tomato', 'indent', 'demand', 'steamy', 'amuser', 'paving', 'single', 'liable', 'damned', 'signal', 'shabby', 'months', 'bluish', 'wilted', 'staple', 'shield', 'bounce', 'ocular', 'ringer', 'manage', 'lithic', 'babies', 'cloaks', 'harley', 'common', 'giblet', 'sponge', 'sample', 'trifle', 'pelite', 'alfred', 'coyote', 'bishop', 'allude', 'female', 'loosen', 'martha', 'zambia', 'anthem', 'masses', 'petrel', 'borrow', 'leader', 'marton', 'barkis', 'depict', 'slovak', 'planet', 'brooks', 'laptop', 'exhort', 'oxford', 'impact', 'vacuum', 'archan', 'nature', 'tryfan', 'amedei', 'tigger', 'pallid', 'citril', 'shoddy', 'duplex', 'proves', 'roster', 'wooler', 'sodium', 'nuptse', 'tingly', 'thirty', 'beetle', 'durham', 'basalt', 'banked', 'uptown', 'thrill', 'wretch', 'curtsy', 'exeter', 'brainy', 'queens', 'quiver', 'deftly', 'obiwan', 'handed', 'buzzer', 'foyers', 'sudoku', 'towhee', 'enrage', 'breast', 'powder', 'scalby', 'cosine', 'wicked', 'haggis', 'aflame', 'coffee', 'upward', 'kodiak', 'pacify', 'throat', 'wellow', 'feeder', 'flight', 'wilson', 'chopin', 'rescue', 'yawler', 'tirade', 'graves', 'reflex', 'peeved', 'soccer', 'wrymug', 'client', 'joyous', 'google', 'laying', 'elidir', 'hannah', 'ladder', 'appeal', 'impede', 'almond', 'connie', 'bucket', 'ascend', 'dicing', 'manuka', 'butter', 'clumsy', 'ankles', 'fossil', 'hinney', 'hunter', 'infirm', 'yorkie', 'dibabs', 'clinic', 'nitric', 'vulcan', 'narrow', 'sarnia', 'strake', 'mumbai', 'system', 'shower', 'launch', 'search', 'skiing', 'tissue', 'carton', 'ogmore', 'belong', 'utmost', 'island', 'winkle', 'smoked', 'yonder', 'object']
+const targetWords = ['harley', 'nuptse', 'duplex', 'narrow', 'clinic', 'powder', 'steamy', 'deftly', 'paving', 'bluish', 'wooler', 'elidir', 'rescue', 'manage', 'impede', 'flight', 'ringer', 'wicked', 'feeder', 'coffee', 'abroad', 'brooks', 'hunter', 'damned', 'beetle', 'laying', 'petrel', 'chopin', 'masses', 'dibabs', 'clumsy', 'single', 'tigger', 'depict', 'ogmore', 'female', 'throat', 'scalby', 'dicing', 'enrage', 'alfred', 'colony', 'tirade', 'demand', 'yonder', 'appeal', 'signal', 'cosine', 'handed', 'manuka', 'staple', 'sponge', 'taught', 'curtsy', 'borrow', 'queens', 'tissue', 'basalt', 'tingly', 'minnow', 'tryfan', 'pallid', 'wilson', 'graves', 'forget', 'sudoku', 'babies', 'vulcan', 'decade', 'peeved', 'butter', 'proves', 'thrill', 'reflex', 'wretch', 'unwell', 'launch', 'months', 'pelite', 'liable', 'martha', 'pseudo', 'common', 'breast', 'marton', 'ascend', 'towhee', 'buzzer', 'wellow', 'banked', 'justly', 'ladder', 'yawler', 'shield', 'lithic', 'archan', 'soccer', 'outlet', 'tomato', 'foyers', 'impact', 'shoddy', 'pastie', 'amedei', 'indent', 'exeter', 'brainy', 'pacify', 'bucket', 'skiing', 'cuckoo', 'filter', 'sarnia', 'wrymug', 'loosen', 'winkle', 'amuser', 'connie', 'hannah', 'shabby', 'nature', 'planet', 'thirty', 'anthem', 'trifle', 'belong', 'nitric', 'unison', 'search', 'google', 'cloaks', 'citril', 'sodium', 'rocket', 'giblet', 'upward', 'oxford', 'allude', 'laptop', 'dinner', 'coyote', 'infirm', 'joyous', 'almond', 'barkis', 'fossil', 'island', 'yorkie', 'ankles', 'aflame', 'exhort', 'wilted', 'mumbai', 'obiwan', 'vacuum', 'object', 'presto', 'leader', 'hinney', 'sample', 'gentry', 'pepper', 'ocular', 'shower', 'utmost', 'kodiak', 'slovak', 'bishop', 'drinks', 'carton', 'tromie', 'system', 'across', 'zambia', 'quiver', 'smoked', 'strake', 'uptown', 'haggis', 'client', 'bounce', 'roster', 'durham'];
 var guess_count = 1;
 var win = false;
 var lose = false;
@@ -175,7 +175,12 @@ function importData () {
             for (let i =0; i<6; i++) {
                 guess_grid.children[i].dataset.letter = guess_grid_json[0][i];
                 guess_grid.children[i].textContent = guess_grid_json[0][i];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                guess_grid.children[i].classList.remove("fast");
                 guess_grid.children[i].dataset.state = calculateResult(i, g);
+                guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, {once: true});
             }
         }
         if (length >= 2) {
@@ -185,7 +190,12 @@ function importData () {
             for (let i =6; i<12; i++) {
                 guess_grid.children[i].dataset.letter = guess_grid_json[1][i-6];
                 guess_grid.children[i].textContent = guess_grid_json[1][i-6];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                guess_grid.children[i].classList.remove("fast");
                 guess_grid.children[i].dataset.state = calculateResult(i-6, g);
+                guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, {once: true});
             }
 
         }
@@ -196,7 +206,12 @@ function importData () {
             for (let i =12; i<18; i++) {
                 guess_grid.children[i].dataset.letter = guess_grid_json[2][i-12];
                 guess_grid.children[i].textContent = guess_grid_json[2][i-12];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                guess_grid.children[i].classList.remove("fast");
                 guess_grid.children[i].dataset.state = calculateResult(i-12, g);
+                guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, {once: true});
             }
         }
         if (length >= 4) {
@@ -205,7 +220,12 @@ function importData () {
             for (let i =18; i<24; i++) {
                 guess_grid.children[i].dataset.letter = guess_grid_json[3][i-18];
                 guess_grid.children[i].textContent = guess_grid_json[3][i-18];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                guess_grid.children[i].classList.remove("fast");
                 guess_grid.children[i].dataset.state = calculateResult(i-18, g);
+                guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, {once: true});
             }
         }
         if (length >= 5) {
@@ -214,7 +234,12 @@ function importData () {
             for (let i =24; i<30; i++) {
                 guess_grid.children[i].dataset.letter = guess_grid_json[4][i-24];
                 guess_grid.children[i].textContent = guess_grid_json[4][i-24];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                guess_grid.children[i].classList.remove("fast");
                 guess_grid.children[i].dataset.state = calculateResult(i-24, g);
+                guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, {once: true});
             }
         }
         if (length >= 6) {
@@ -223,7 +248,12 @@ function importData () {
             for (let i =30; i<36; i++) {
                 guess_grid.children[i].dataset.letter = guess_grid_json[5][i-30];
                 guess_grid.children[i].textContent = guess_grid_json[5][i-30];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                guess_grid.children[i].classList.remove("fast");
                 guess_grid.children[i].dataset.state = calculateResult(i-30, g);
+                guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, {once: true});
             }
         }
         if (length >= 7) {
@@ -232,7 +262,12 @@ function importData () {
             for (let i =36; i<42; i++) {
                 guess_grid.children[i].dataset.letter = guess_grid_json[6][i-36];
                 guess_grid.children[i].textContent = guess_grid_json[6][i-36];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                guess_grid.children[i].classList.remove("fast");
                 guess_grid.children[i].dataset.state = calculateResult(i-36, g);
+                guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, {once: true});
             }
         }
         if (length >= 8) {
@@ -241,12 +276,23 @@ function importData () {
             for (let i =42; i<48; i++) {
                 guess_grid.children[i].dataset.letter = guess_grid_json[7][i-42];
                 guess_grid.children[i].textContent = guess_grid_json[7][i-42];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                guess_grid.children[i].classList.remove("fast");
                 guess_grid.children[i].dataset.state = calculateResult(i-42, g);
+                guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, {once: true});
             }
         }
 
+        setTimeout(() => {
+            for (let i =0; i<length*6; i++) {
+                    guess_grid.children[i].classList.add("fast");
+            } }, 700);
 
-    }
+        }
+
+    
 
     if (win || lose) {
         setTimeout(
@@ -386,26 +432,36 @@ function startInteraction () {
   
 function pressKey(key) {
     const activeTiles = getActiveTiles();
-    if (activeTiles.length >= 6) return
-    const next = guess_grid.querySelector(":not([data-letter])")
-    next.dataset.letter = key.toLowerCase()
-    next.textContent = key
+    if (activeTiles.length >= 6) return;
+    const next = guess_grid.querySelector(":not([data-letter])");
+    next.dataset.letter = key.toLowerCase();
+    next.textContent = key;
     next.style.transition = "transform 50ms linear";
     next.classList.add("expand");
     next.addEventListener("transitionend", () => {
-        next.classList.remove("expand");
-        setTimeout( () => {
+            next.classList.remove("expand");
+        setTimeout(() => {
         next.style.transition = "transform 250ms linear";
         }, 25);
     });
     next.dataset.state = "active"
 }
+
+
   
   function handleKeyPress(e) {
     if (e.key === "Enter") {
-      submitGuess();
-      return;
+        activeTiles = getActiveTiles();
+        for (let i = 0; i < activeTiles.length; i++) {
+            const tile = activeTiles[i];
+            if (tile.classList.value.includes("expand")) {
+                tile.classList.remove("expand");
+            }
     }
+    setTimeout(() => {
+        submitGuess();
+    }, 50);
+}
     if (e.key === "Backspace" || e.key === "Delete") {
       deleteKey();
       return;
@@ -504,7 +560,7 @@ function flipTiles (tile, index, array, guess) {
         tile.classList.add("flip")
     }, (index*500)/2);
 
-
+    console.log(index)
 
 
     tile.addEventListener("transitionend", () => {

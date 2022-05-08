@@ -1,5 +1,5 @@
 {
-	"day": 5,
+	"day": 6,
 	"guess_1": 4,
 	"guess_2": 0,
 	"guess_3": 0,
@@ -7,71 +7,78 @@
 	"guess_5": 0,
 	"guess_6": 0,
 	"guess_7": 1,
-	"guess_8": 0,
+	"guess_8": 1,
 	"lose": false,
-	"max_streak": 5,
+	"max_streak": 6,
 	"percent": 100,
 	"played": true,
-	"played_count": 5,
+	"played_count": 6,
 	"played_letter": [
 		[
-			"d",
-			"i",
-			"n",
-			"e",
-			"r",
-			"s"
+			"a",
+			"a",
+			"a",
+			"a",
+			"a",
+			"a"
 		],
 		[
-			"c",
-			"r",
-			"i",
 			"s",
+			"t",
+			"u",
 			"p",
-			"y"
+			"i",
+			"d"
 		],
 		[
-			"r",
+			"s",
+			"t",
 			"e",
-			"c",
-			"y",
-			"c",
-			"l"
-		],
-		[
-			"e",
-			"e",
-			"e",
-			"e",
-			"e",
+			"a",
+			"m",
 			"e"
 		],
 		[
+			"s",
+			"t",
 			"r",
-			"r",
-			"r",
-			"r",
-			"r",
-			"r"
-		],
-		[
-			"f",
-			"i",
-			"l",
-			"l",
 			"e",
-			"r"
+			"a",
+			"m"
 		],
 		[
-			"f",
-			"i",
-			"l",
+			"s",
+			"s",
+			"s",
+			"s",
+			"s",
+			"s"
+		],
+		[
+			"s",
+			"s",
+			"s",
+			"s",
+			"s",
+			"s"
+		],
+		[
+			"s",
+			"s",
+			"s",
+			"s",
+			"s",
+			"s"
+		],
+		[
+			"s",
 			"t",
 			"e",
-			"r"
-		],
-		[]
+			"a",
+			"m",
+			"y"
+		]
 	],
-	"streak": 5,
+	"streak": 6,
 	"win": true
 }
