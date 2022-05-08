@@ -148,7 +148,7 @@ function importData () {
     guess_8 = json_file.guess_8;
     win = json_file.win;
     lose = json_file.lose;
-    if (Math.floor(dayOffset) > json_file.day+1) {
+    if (Math.floor(dayOffset) > json_file.day+4) {
         if (cur_strk > max_strk) {
             max_strk = cur_strk;
         }
@@ -409,9 +409,11 @@ function createOutput() {
                 output += "🟨";
             }
         }
-        if (counter == 6 && guess_grid.children[i+1].dataset.state != undefined) {
+        if (counter == 6 && guess_grid.children[i+1]) {
+            if (guess_grid.children[i+1].dataset.state != undefined) {
             output += "\n";
             counter = 1;
+            }
         }
         else {
         counter ++;
