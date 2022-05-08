@@ -26,7 +26,7 @@ nextDay.setSeconds(0);
 nextDay.setHours(0);
 const targetWord = targetWords[Math.floor(dayOffset)]
 const stats_screen = document.getElementById("stats_screen");
-const s2 = document.getElementById("s2");
+const s2 = document.getElementById("s2")
 const played_div = document.querySelector("#stat-container-played #stat");
 const per_div = document.querySelector("#stat-container-win-per #stat");
 const ms_div = document.querySelector("#stat-container-max-streak #stat");
@@ -34,7 +34,9 @@ const cs_div = document.querySelector("#stat-container-cur-streak #stat");
 const distrib_div = document.querySelector("#distribs");
 document.getElementById("stats-button").onclick = showStats;
 stats_screen.addEventListener("click", hideStats);
-var x, y;
+s2.addEventListener('click', e => {
+    e.stopImmediatePropagation()
+})
 var share_btn = document.getElementById("share");
 share_btn.onclick = copyToClipboard;
 
@@ -146,7 +148,6 @@ function importData () {
     guess_8 = json_file.guess_8;
     win = json_file.win;
     lose = json_file.lose;
-
     if (Math.floor(dayOffset) > json_file.day+1) {
         if (cur_strk > max_strk) {
             max_strk = cur_strk;
@@ -159,15 +160,7 @@ function importData () {
             lose = false;
             has_played = false;
             guess_grid_json = [
-                [],
-                [],
-                [],
-                [],
-
-                [],
-                [],
-                [],
-                [],
+                [],[],[],[],[],[],[],[]
             ];
 
         exportData();
@@ -235,7 +228,6 @@ function importData () {
         }
         if (length >= 7) {
             let g = guess_grid_json[6][0]+guess_grid_json[6][1]+guess_grid_json[6][2]+guess_grid_json[6][3]+guess_grid_json[6][4]+guess_grid_json[6][5];
-            console.log(g);
 
             for (let i =36; i<42; i++) {
                 guess_grid.children[i].dataset.letter = guess_grid_json[6][i-36];
@@ -257,7 +249,12 @@ function importData () {
     }
 
     if (win || lose) {
-        setTimeout(showStats, 2000)
+        setTimeout(
+            () => {
+                if (!s2.classList.contains("hide")) {
+                    showStats();
+                }
+            }, 2000)
     }
 }
 
@@ -286,10 +283,6 @@ function exportData () {
 
 
 
-onmousedown = function(e){
-    x = e.clientX;
-    y = e.clientY;
-}
 function showStats()
 {   
     s2.style.display = "block";
@@ -338,7 +331,6 @@ function updateStats () {
 
 
 function hideStats() {
-    if ((x <= 494 || x >= 944)) {
         s2.classList.add("hide");
         s2.addEventListener("animationend", () => {
             setTimeout(() => {
@@ -347,20 +339,6 @@ function hideStats() {
             s2.style.display = "none";
             s2.classList.remove("hide");
         }, {once: true});
-    }
-     if (y <= 190 || y >= 690) {
-        s2.classList.add("hide");
-        s2.addEventListener("animationend", () => {
-            setTimeout(() => {
-                stats_screen.style.display = "none";
-            }, 200);
-            s2.style.display = "none";
-            s2.classList.remove("hide");
-
-        }, {once: true});
-    }
-    x = 0;
-    y = 0;
 }
 
 
@@ -399,7 +377,7 @@ function createOutput() {
 
 function copyToClipboard () {
     clipboard.writeText(createOutput());
-    showAlert("Copied to clipboard!");
+    showAlert("Copied to clipboard!", 1000, -1);
 }
 
 function startInteraction () {
@@ -412,6 +390,14 @@ function pressKey(key) {
     const next = guess_grid.querySelector(":not([data-letter])")
     next.dataset.letter = key.toLowerCase()
     next.textContent = key
+    next.style.transition = "transform 50ms linear";
+    next.classList.add("expand");
+    next.addEventListener("transitionend", () => {
+        next.classList.remove("expand");
+        setTimeout( () => {
+        next.style.transition = "transform 250ms linear";
+        }, 25);
+    });
     next.dataset.state = "active"
 }
   
@@ -479,9 +465,13 @@ function submitGuess () {
 
 
 
-function showAlert(message, duration = 1000) {
+function showAlert(message, duration = 1000, zIndex=0) {
     const alert = document.createElement("div");
+    if (zIndex == -1) {
+        stats_screen.style.zIndex = 1;
+    }
     alert.textContent = message;
+    alert.style.zIndex = zIndex;
     alert.classList.add("alert");
     alertContainer.prepend(alert);
     if (duration == null) return 
@@ -490,6 +480,9 @@ function showAlert(message, duration = 1000) {
         alert.classList.add("hide")
         alert.addEventListener("transitionend", () => {
             alert.remove()
+            if (alertContainer.length == 0) {
+            stats_screen.style.zIndex = 2;
+            }
         });
     }, duration);
 }
@@ -584,7 +577,9 @@ function checkWinLose(guess, tiles) {
             lose = true;
             stopInteraction()
             setTimeout(() => {
+                if (!s2.classList.contains("hide")) {
                 showStats();
+                }
             return
         }, 1700);
         played++;
@@ -601,7 +596,9 @@ function checkWinLose(guess, tiles) {
         danceTiles(tiles)
         stopInteraction()
         setTimeout(() => {
-            showStats();
+            if (!s2.classList.contains("hide")) {
+                showStats();
+                }
         return
     }, 1400);
 }

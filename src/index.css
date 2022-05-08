@@ -42,6 +42,8 @@ body {
 }
 
 
+
+
 @keyframes slideIn {
   0% {
     transform: translateY(50px);
@@ -85,10 +87,10 @@ body {
   border-radius: 8px;
   border: none;
   background-color: rgb(18,18,19);
-  z-index: 100;
   animation: slideIn 0.25s ease-in-out;
   text-align: center;
   overflow: auto;
+  z-index: 5;
 }
 
 
@@ -263,6 +265,10 @@ body {
 
 .tile.flip {
   transform: rotateX(90deg); 
+}
+
+.tile.expand {
+  transform: scale(1.05);
 }
 
 
