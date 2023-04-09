@@ -16,7 +16,7 @@ var lose = false;
 const {clipboard} = require('electron');
 const json_file = require(`${__dirname}/data.json`);
 let nex_tim = document.getElementById("nex");
-const offsetFromDate = new Date(2022,4,2)
+const offsetFromDate = new Date(2023,3,9)
 const msOffset = Date.now() - offsetFromDate
 const dayOffset = msOffset / 1000 / 60 / 60 / 24
 var nextDay = new Date();
@@ -76,30 +76,40 @@ function getLengthOfJson() {
 }
 
 function updateTimer () {
-    var currentTime = new Date();
-    var hours = nextDay.getHours() - (currentTime.getHours()-23);
-    var minutes = nextDay.getMinutes() - (currentTime.getMinutes()-59);
-    var seconds = nextDay.getSeconds() - (currentTime.getSeconds()-59);
-    if (hours == 0 && minutes == 0 && seconds == 0) {
+    const now = new Date();
+    const diff = nextDay.getTime() - now.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
+    const minutes = Math.floor((diff / (1000 * 60)) % 60).toString().padStart(2, '0');
+    const seconds = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+
+
+
+
+
+    // var currentTime = new Date();
+    // var hours = nextDay.getHours() - (currentTime.getHours()-23);
+    // var minutes = nextDay.getMinutes() - (currentTime.getMinutes()-59);
+    // var seconds = nextDay.getSeconds() - (currentTime.getSeconds()-59);
+    if (hours == "00" && minutes == "00" && seconds == "00") {
         clearInterval(timerUpdate)
     };
-    if (seconds == 60) {
-        seconds = 0;
-        minutes ++;
-    }
-    if (minutes == 60) {
-        minutes = 0;
-        hours ++;
-    }
-    if (seconds < 10) {
-        seconds = "0"+seconds;
-    }
-    if (minutes < 10) {
-        minutes = "0"+minutes;
-    }
-    if (hours < 10) {
-        hours = "0"+hours;
-    }
+    // if (seconds == 60) {
+    //     seconds = 0;
+    //     minutes ++;
+    // }
+    // if (minutes == 60) {
+    //     minutes = 0;
+    //     hours ++;
+    // }
+    // if (seconds < 10) {
+    //     seconds = "0"+seconds;
+    // }
+    // if (minutes < 10) {
+    //     minutes = "0"+minutes;
+    // }
+    // if (hours < 10) {
+    //     hours = "0"+hours;
+    // }
     nex_tim.textContent = `${hours}:${minutes}:${seconds}`;
 }
 
@@ -153,6 +163,12 @@ function importData () {
             max_strk = cur_strk;
         }
         cur_strk = 0;
+        win = false;
+            lose = false;
+            has_played = false;
+            guess_grid_json = [
+                [],[],[],[],[],[],[],[]
+            ];
         exportData();
     }
     else if (Math.floor(dayOffset) > json_file.day) {
@@ -332,7 +348,7 @@ function exportData () {
 function showStats()
 {   
     s2.style.display = "block";
-    stats_screen.style.display = "block";
+    stats_screen.style.display = "flex";
 }
 
 
@@ -501,9 +517,9 @@ function submitGuess () {
     const activeTiles = [...getActiveTiles()]
     if (activeTiles.length < 6) {
      if (alertContainer.children.length <3){
-        showAlert("Not enough letters")
-     shakeTiles([...getGuessTiles()]);
-     }
+        showAlert("Not enough letters");
+    }
+    shakeTiles([...getGuessTiles()]);
     return
     }
     const guess = activeTiles.reduce((word, tile) => {
@@ -562,7 +578,6 @@ function flipTiles (tile, index, array, guess) {
         tile.classList.add("flip")
     }, (index*500)/2);
 
-    console.log(index)
 
 
     tile.addEventListener("transitionend", () => {
