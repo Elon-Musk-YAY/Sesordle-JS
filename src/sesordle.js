@@ -1,5 +1,6 @@
 const _path = require('path');
 const fs = require('fs');
+const wordsList = require('./words.js');
 
 
 /*
@@ -9,12 +10,13 @@ const fs = require('fs');
 
 const alertContainer = document.querySelector("[data-alert-container]")
 const guess_grid = document.querySelector("[data-guess-grid]")
-const targetWords = ['harley', 'nuptse', 'duplex', 'narrow', 'clinic', 'powder', 'steamy', 'deftly', 'paving', 'bluish', 'wooler', 'elidir', 'rescue', 'manage', 'impede', 'flight', 'ringer', 'wicked', 'feeder', 'coffee', 'abroad', 'brooks', 'hunter', 'damned', 'beetle', 'laying', 'petrel', 'chopin', 'masses', 'dibabs', 'clumsy', 'single', 'tigger', 'depict', 'ogmore', 'female', 'throat', 'scalby', 'dicing', 'enrage', 'alfred', 'colony', 'tirade', 'demand', 'yonder', 'appeal', 'signal', 'cosine', 'handed', 'manuka', 'staple', 'sponge', 'taught', 'curtsy', 'borrow', 'queens', 'tissue', 'basalt', 'tingly', 'minnow', 'tryfan', 'pallid', 'wilson', 'graves', 'forget', 'sudoku', 'babies', 'vulcan', 'decade', 'peeved', 'butter', 'proves', 'thrill', 'reflex', 'wretch', 'unwell', 'launch', 'months', 'pelite', 'liable', 'martha', 'pseudo', 'common', 'breast', 'marton', 'ascend', 'towhee', 'buzzer', 'wellow', 'banked', 'justly', 'ladder', 'yawler', 'shield', 'lithic', 'archan', 'soccer', 'outlet', 'tomato', 'foyers', 'impact', 'shoddy', 'pastie', 'amedei', 'indent', 'exeter', 'brainy', 'pacify', 'bucket', 'skiing', 'cuckoo', 'filter', 'sarnia', 'wrymug', 'loosen', 'winkle', 'amuser', 'connie', 'hannah', 'shabby', 'nature', 'planet', 'thirty', 'anthem', 'trifle', 'belong', 'nitric', 'unison', 'search', 'google', 'cloaks', 'citril', 'sodium', 'rocket', 'giblet', 'upward', 'oxford', 'allude', 'laptop', 'dinner', 'coyote', 'infirm', 'joyous', 'almond', 'barkis', 'fossil', 'island', 'yorkie', 'ankles', 'aflame', 'exhort', 'wilted', 'mumbai', 'obiwan', 'vacuum', 'object', 'presto', 'leader', 'hinney', 'sample', 'gentry', 'pepper', 'ocular', 'shower', 'utmost', 'kodiak', 'slovak', 'bishop', 'drinks', 'carton', 'tromie', 'system', 'across', 'zambia', 'quiver', 'smoked', 'strake', 'uptown', 'haggis', 'client', 'bounce', 'roster', 'durham'];
+const targetWords = ["labour","mature","guided","camera","fusion","granny","tribal","ultram","loaded","placed","repair","ending","modern","offers","crimes","helped","unlock","steven","browse","parcel","tuning","fisher","growth","hacker","austin","metals","tested","cradle","ottawa","errors","blades","photos","street","schema","wallet","justin","policy","sounds","holmes","clouds","plasma","simply","acting","define","famous","census","pierce","fabric","narrow","milton","jordan","nurses","shield","norway","viagra","tunnel","optics","rather","wesley","fellow","dragon","radius","nasdaq","slowly","estate","flickr","powder","calvin","nutten","coated","saturn","wizard","thinks","suites","framed","chorus","prefix","assist","bought","invite","pastor","bloody","nvidia","permit","campus","colors","subaru","speech","safely","rescue","fought","sexual","target","kansas","puerto","mutual","lovers","plenty","degree","driver","guinea","cookie","womens","leslie","listed","ebooks","summit","delete","heater","factor","counts","parish","jackie","desert","issues","adipex","lambda","cooper","latter","actual","knives","berlin","pieces","before","median","muscle","ballet","butter","saddam","member","viewer","holdem","remote","prices","lesson","jaguar","branch","larger","sticky","garcia","begins","prozac","bigger","casino","hansen","throat","potter","vector","adjust","daniel","scenic","occurs","cruise","vessel","serbia","bother","render","trades","hosted","titled","failed","diesel","sticks","marine","cialis","decade","queens","burton","modify","terror","intend","troops","babies","nicole","puzzle","showed","judges","aspnet","damage","worlds","garlic","speaks","sorted","phases","stylus","durham","office","report","saying","carpet","refuse","unwrap","proper","writes","garden","across","planes","secure","arrest","denver"]
 var guess_count = 1;
 var win = false;
 var lose = false;
 const {clipboard} = require('electron');
-const json_file = require(`${__dirname}/data.json`);
+// const json_file = require(`${__dirname}/data.json`);
+const json_file = require(`./data.json`);
 let nex_tim = document.getElementById("nex");
 const offsetFromDate = new Date(2023,3,9)
 const msOffset = Date.now() - offsetFromDate
@@ -469,7 +471,7 @@ function pressKey(key) {
   
   function handleKeyPress(e) {
     if (e.key === "Enter") {
-        activeTiles = getActiveTiles();
+        var activeTiles = getActiveTiles();
         for (let i = 0; i < activeTiles.length; i++) {
             const tile = activeTiles[i];
             if (tile.classList.value.includes("expand")) {
@@ -515,16 +517,21 @@ function deleteKey () {
 
 function submitGuess () {
     const activeTiles = [...getActiveTiles()]
+    const guess = activeTiles.reduce((word, tile) => {
+        return word + tile.dataset.letter
+    }, "")
     if (activeTiles.length < 6) {
      if (alertContainer.children.length <3){
-        showAlert("Not enough letters");
+        showAlert("Not enough letters.");
     }
     shakeTiles([...getGuessTiles()]);
     return
     }
-    const guess = activeTiles.reduce((word, tile) => {
-        return word + tile.dataset.letter
-    }, "")
+    if (wordsList.indexOf(guess) === -1) {
+        showAlert("Not in word list.");
+        shakeTiles([...getGuessTiles()]);
+        return;
+    }
     stopInteraction()
     if (!has_played) {
         has_played = true;

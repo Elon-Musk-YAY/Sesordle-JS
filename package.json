@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make_arch": "electron-forge make --arch arm64",
+    "make_mac_arm": "electron-forge make --arch arm64",
     "make_win": "electron-forge make --platform win32",
     "make_mac": "electron-forge make --arch x64",
     "make_linux": "electron-forge make --platform linux",
