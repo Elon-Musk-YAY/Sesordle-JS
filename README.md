@@ -2,4 +2,4 @@
 
 A wordle game but with 6 letters!
 
-([Link]https://akshar727.itch.io/sesordle)
+[Download Link (MacOS only)](https://akshar727.itch.io/sesordle)
