@@ -60,7 +60,9 @@ const per_div = document.querySelector("#stat-container-win-per #stat");
 const ms_div = document.querySelector("#stat-container-max-streak #stat");
 const cs_div = document.querySelector("#stat-container-cur-streak #stat");
 const distrib_div = document.querySelector("#distribs");
+var hasPressedWipe = false;
 document.getElementById("stats-button").onclick = showStats;
+// document.getElementById("wipe").onclick = wipeSave;
 stats_screen.addEventListener("click", hideStats);
 s2.addEventListener('click', e => {
     e.stopImmediatePropagation()
@@ -104,9 +106,15 @@ function getLengthOfJson() {
 }
 
 function wipeSave() {
+    if (!hasPressedWipe) {
+        hasPressedWipe = true;
+        showAlert("Click again to confirm wipe.", 4000,() => {hasPressedWipe=false}, -1);
+    } else {
     localStorage.removeItem("gameData");
     hideStats();
+    hasPressedWipe = false;
     window.location.reload();
+}
 
 
 }
@@ -226,11 +234,6 @@ function importData() {
                     guess_grid.children[i].style.transition = 'transform 250ms linear;';
                 }, { once: true });
             }
-            if (gameData.win && getLengthOfJson() == 1) {
-                setTimeout(() => {
-                    checkWinLose(g, Array.from(guess_grid.children).slice(0, 6), true, cb);
-                }, 1200);
-            }
         }
         if (length >= 2) {
 
@@ -245,11 +248,6 @@ function importData() {
                     guess_grid.children[i].dataset.state = calculateResult(i - 6, g);
                     guess_grid.children[i].style.transition = 'transform 250ms linear;';
                 }, { once: true });
-            }
-            if (gameData.win && getLengthOfJson() == 2) {
-                setTimeout(() => {
-                    checkWinLose(g, Array.from(guess_grid.children).slice(6, 12), true, cb);
-                }, 1500);
             }
 
         }
@@ -267,11 +265,6 @@ function importData() {
                     guess_grid.children[i].style.transition = 'transform 250ms linear;';
                 }, { once: true });
             }
-            if (gameData.win && getLengthOfJson() == 3) {
-                setTimeout(() => {
-                    checkWinLose(g, Array.from(guess_grid.children).slice(12, 18), true, cb);
-                }, 1800);
-            }
         }
         if (length >= 4) {
             let g = guess_grid_json[3][0] + guess_grid_json[3][1] + guess_grid_json[3][2] + guess_grid_json[3][3] + guess_grid_json[3][4] + guess_grid_json[3][5];
@@ -285,11 +278,6 @@ function importData() {
                     guess_grid.children[i].dataset.state = calculateResult(i - 18, g);
                     guess_grid.children[i].style.transition = 'transform 250ms linear;';
                 }, { once: true });
-            }
-            if (gameData.win && getLengthOfJson() == 4) {
-                setTimeout(() => {
-                    checkWinLose(g, Array.from(guess_grid.children).slice(18, 24), true, cb);
-                }, 2100);
             }
         }
         if (length >= 5) {
@@ -305,11 +293,6 @@ function importData() {
                     guess_grid.children[i].style.transition = 'transform 250ms linear;';
                 }, { once: true });
             }
-            if (gameData.win && getLengthOfJson() == 5) {
-                setTimeout(() => {
-                    checkWinLose(g, Array.from(guess_grid.children).slice(24, 30), true, cb);
-                }, 2400);
-            }
         }
         if (length >= 6) {
             let g = guess_grid_json[5][0] + guess_grid_json[5][1] + guess_grid_json[5][2] + guess_grid_json[5][3] + guess_grid_json[5][4] + guess_grid_json[5][5];
@@ -323,11 +306,6 @@ function importData() {
                     guess_grid.children[i].dataset.state = calculateResult(i - 30, g);
                     guess_grid.children[i].style.transition = 'transform 250ms linear;';
                 }, { once: true });
-            }
-            if (gameData.win && getLengthOfJson() == 6) {
-                setTimeout(() => {
-                    checkWinLose(g, Array.from(guess_grid.children).slice(30, 36), true, cb);
-                }, 2700);
             }
         }
         if (length >= 7) {
@@ -343,11 +321,6 @@ function importData() {
                     guess_grid.children[i].style.transition = 'transform 250ms linear;';
                 }, { once: true });
             }
-            if (gameData.win && getLengthOfJson() == 7) {
-                setTimeout(() => {
-                    checkWinLose(g, Array.from(guess_grid.children).slice(36, 42), true, cb);
-                }, 3000);
-            }
         }
         if (length >= 8) {
             let g = guess_grid_json[7][0] + guess_grid_json[7][1] + guess_grid_json[7][2] + guess_grid_json[7][3] + guess_grid_json[7][4] + guess_grid_json[7][5];
@@ -362,11 +335,6 @@ function importData() {
                     guess_grid.children[i].style.transition = 'transform 250ms linear;';
                 }, { once: true });
             }
-            if (gameData.win && getLengthOfJson() == 8) {
-                setTimeout(() => {
-                    checkWinLose(g, Array.from(guess_grid.children).slice(42, 48), true, cb);
-                }, 2800);
-            }
         }
 
         setTimeout(() => {
@@ -376,6 +344,18 @@ function importData() {
                 }, i * 25);
             }
         }, 400);
+        guess_grid.children[(length*6)-1].addEventListener("transitionend", () => {
+            setTimeout(() => {
+            const tiles = Array.from(guess_grid.children).slice((length-1) * 6, length * 6);
+            const guess = tiles.reduce((word, tile) => {
+                return word + tile.dataset.letter
+            }, "")
+            if (gameData.win || gameData.lose) {
+                checkWinLose(guess, tiles, true, cb);
+            }
+            }, 300);
+        },{once: true});
+
 
     }
 
@@ -550,7 +530,7 @@ function handleKeyPress(e) {
         }
         setTimeout(() => {
             submitGuess();
-        }, 300);
+        }, 250);
     }
     if (e.key === "Backspace" || e.key === "Delete") {
         deleteKey();
@@ -748,7 +728,7 @@ function checkWinLose(guess, tiles, imported = false, cb = null) {
             updateStats();
         }
     } else if (guess_count == 9) {
-        showAlert(targetWord.toUpperCase(), 1000, null, -1)
+        showAlert(targetWord.toUpperCase(), 1000, cb, -1)
         if (!imported) {
             win = false;
             lose = true;
@@ -769,6 +749,7 @@ function checkWinLose(guess, tiles, imported = false, cb = null) {
             }
             updateStats();
         }
+        exportData();
         return;
     }
     if (win) {
@@ -798,10 +779,13 @@ function danceTiles(tiles) {
 }
 
 
-document.querySelector("#main").innerText = "Sesordle - Day "+Math.floor(dayOffset);
+const baseText = `Sesordle — Day ${Math.floor(dayOffset)}`
+
+document.querySelector("#main").innerHTML = baseText;
 startInteraction();
 importData();
 if (win || lose) {
     stopInteraction();
+    document.querySelector("#main").innerHTML = `${baseText}: <span style='font-weight: bold'>${targetWord.toUpperCase()}</span>`;
 }
 updateStats();

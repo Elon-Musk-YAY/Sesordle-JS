@@ -19,7 +19,7 @@
 }
 /* make some gradient text */
 #title-bar div {
-  background: linear-gradient(to right, #626262,#9c9a4f, #ffff00, #00ff00);
+  background: linear-gradient(to right, #9c9a4f, #ffff00, #00ff00);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -70,6 +70,26 @@ body {
   bottom: 15px;
   right: 3%;
   left: 3%;
+}
+
+#wipe {
+  color: #fff;
+  height: 20px;
+  background-color: rgb(143, 1, 1);
+  border-radius: 4px;
+  border:none;
+  font-size: 15px;
+  letter-spacing: 3px;
+  font-family: monospace;
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#wipe:hover {
+  background-color: rgb(195, 3, 3);
+  cursor: pointer;
 }
 
 
@@ -214,6 +234,8 @@ body {
   background-color: rgb(55, 167, 83);
   cursor: pointer;
 }
+
+
 
 
 

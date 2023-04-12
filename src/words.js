@@ -1,4 +1,5 @@
-const wordList = ['abacus',
+const wordList = [
+'abacus',
 'abased',
 'abases',
 'abated',
