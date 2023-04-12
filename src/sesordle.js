@@ -1,24 +1,50 @@
-const _path = require('path');
-const fs = require('fs');
 const wordsList = require('./words.js');
 
 
 /*
 * Created by Akshar Desai on 5/6/2022.
-*
+* Updated in April 2023
 */
 
 const alertContainer = document.querySelector("[data-alert-container]")
 const guess_grid = document.querySelector("[data-guess-grid]")
-const targetWords = ["labour","mature","guided","camera","fusion","granny","tribal","ultram","loaded","placed","repair","ending","modern","offers","crimes","helped","unlock","steven","browse","parcel","tuning","fisher","growth","hacker","austin","metals","tested","cradle","ottawa","errors","blades","photos","street","schema","wallet","justin","policy","sounds","holmes","clouds","plasma","simply","acting","define","famous","census","pierce","fabric","narrow","milton","jordan","nurses","shield","norway","viagra","tunnel","optics","rather","wesley","fellow","dragon","radius","nasdaq","slowly","estate","flickr","powder","calvin","nutten","coated","saturn","wizard","thinks","suites","framed","chorus","prefix","assist","bought","invite","pastor","bloody","nvidia","permit","campus","colors","subaru","speech","safely","rescue","fought","sexual","target","kansas","puerto","mutual","lovers","plenty","degree","driver","guinea","cookie","womens","leslie","listed","ebooks","summit","delete","heater","factor","counts","parish","jackie","desert","issues","adipex","lambda","cooper","latter","actual","knives","berlin","pieces","before","median","muscle","ballet","butter","saddam","member","viewer","holdem","remote","prices","lesson","jaguar","branch","larger","sticky","garcia","begins","prozac","bigger","casino","hansen","throat","potter","vector","adjust","daniel","scenic","occurs","cruise","vessel","serbia","bother","render","trades","hosted","titled","failed","diesel","sticks","marine","cialis","decade","queens","burton","modify","terror","intend","troops","babies","nicole","puzzle","showed","judges","aspnet","damage","worlds","garlic","speaks","sorted","phases","stylus","durham","office","report","saying","carpet","refuse","unwrap","proper","writes","garden","across","planes","secure","arrest","denver"]
+const targetWords = require('./targetWords.js')
 var guess_count = 1;
 var win = false;
 var lose = false;
-const {clipboard} = require('electron');
-// const json_file = require(`${__dirname}/data.json`);
-const json_file = require(`./data.json`);
+var isClosing = false;
+const { clipboard } = require('electron');
+const startData = {
+    "day": 0,
+    "guess_1": 0,
+    "guess_2": 0,
+    "guess_3": 0,
+    "guess_4": 0,
+    "guess_5": 0,
+    "guess_6": 0,
+    "guess_7": 0,
+    "guess_8": 0,
+    "lose": false,
+    "max_streak": 0,
+    "percent": 0,
+    "played": true,
+    "played_count": 0,
+    "played_letter": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+    ],
+    "streak": 0,
+    "win": false
+}
+var gameData;
 let nex_tim = document.getElementById("nex");
-const offsetFromDate = new Date(2023,3,9)
+const offsetFromDate = new Date(2023, 3, 9)
 const msOffset = Date.now() - offsetFromDate
 const dayOffset = msOffset / 1000 / 60 / 60 / 24
 var nextDay = new Date();
@@ -69,7 +95,7 @@ var guess_grid_json = [
 
 function getLengthOfJson() {
     var length = 0;
-    for (let i = 0; i<8; i++) {
+    for (let i = 0; i < 8; i++) {
         if (guess_grid_json[i].length > 0) {
             length++;
         }
@@ -77,7 +103,15 @@ function getLengthOfJson() {
     return length;
 }
 
-function updateTimer () {
+function wipeSave() {
+    localStorage.removeItem("gameData");
+    hideStats();
+    window.location.reload();
+
+
+}
+
+function updateTimer() {
     const now = new Date();
     const diff = nextDay.getTime() - now.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
@@ -87,56 +121,34 @@ function updateTimer () {
 
 
 
-
-    // var currentTime = new Date();
-    // var hours = nextDay.getHours() - (currentTime.getHours()-23);
-    // var minutes = nextDay.getMinutes() - (currentTime.getMinutes()-59);
-    // var seconds = nextDay.getSeconds() - (currentTime.getSeconds()-59);
     if (hours == "00" && minutes == "00" && seconds == "00") {
         clearInterval(timerUpdate)
     };
-    // if (seconds == 60) {
-    //     seconds = 0;
-    //     minutes ++;
-    // }
-    // if (minutes == 60) {
-    //     minutes = 0;
-    //     hours ++;
-    // }
-    // if (seconds < 10) {
-    //     seconds = "0"+seconds;
-    // }
-    // if (minutes < 10) {
-    //     minutes = "0"+minutes;
-    // }
-    // if (hours < 10) {
-    //     hours = "0"+hours;
-    // }
     nex_tim.textContent = `${hours}:${minutes}:${seconds}`;
 }
 
 var timerUpdate = setInterval(updateTimer, 1000);
 
-function removeByIndex(str,index) {
-    return str.slice(0,index) + str.slice(index+1);
+function removeByIndex(str, index) {
+    return str.slice(0, index) + str.slice(index + 1);
 }
 
-function calculateResult (index, guess) {
+function calculateResult(index, guess) {
     var temp = targetWord;
     var out = [];
     // check correct letters
-    for (let i = 0; i<6; i++) {
+    for (let i = 0; i < 6; i++) {
         if (targetWord[i] == guess[i]) {
             out[i] = "correct";
             temp = removeByIndex(temp, temp.indexOf(guess[i]));
         }
     }
-    for (let i = 0; i<6; i++) {
+    for (let i = 0; i < 6; i++) {
         if (temp.includes(guess[i]) && out[i] != "correct") {
             out[i] = "wrong-location";
             temp = removeByIndex(temp, temp.indexOf(guess[i]));
         }
-        else if (out[i] != "correct")  {
+        else if (out[i] != "correct") {
             out[i] = "wrong";
         }
 
@@ -144,211 +156,257 @@ function calculateResult (index, guess) {
 
     return out[index];
 }
-
-function importData () {
-    played = json_file.played_count;
-    win_per = json_file.percent;
-    cur_strk = json_file.streak;
-    max_strk = json_file.max_streak;
-    guess_1 = json_file.guess_1;
-    guess_2 = json_file.guess_2;
-    guess_3 = json_file.guess_3;
-    guess_4 = json_file.guess_4;
-    guess_5 = json_file.guess_5;
-    guess_6 = json_file.guess_6;
-    guess_7 = json_file.guess_7;
-    guess_8 = json_file.guess_8;
-    win = json_file.win;
-    lose = json_file.lose;
-    if (Math.floor(dayOffset) > json_file.day+1) {
-        if (cur_strk > max_strk) {
-            max_strk = cur_strk;
-        }
-        cur_strk = 0;
-        win = false;
-            lose = false;
-            has_played = false;
-            guess_grid_json = [
-                [],[],[],[],[],[],[],[]
-            ];
-        exportData();
-    }
-    else if (Math.floor(dayOffset) > json_file.day) {
-            win = false;
-            lose = false;
-            has_played = false;
-            guess_grid_json = [
-                [],[],[],[],[],[],[],[]
-            ];
-
-        exportData();
-    }
-    if (json_file.played) {
-        guess_grid_json = json_file.played_letter;
-        var length = getLengthOfJson();
-        guess_count = getLengthOfJson()+1;
-        if (length >= 1) {
-            let g = guess_grid_json[0][0]+guess_grid_json[0][1]+guess_grid_json[0][2]+guess_grid_json[0][3]+guess_grid_json[0][4]+guess_grid_json[0][5];
-
-            for (let i =0; i<6; i++) {
-                guess_grid.children[i].dataset.letter = guess_grid_json[0][i];
-                guess_grid.children[i].textContent = guess_grid_json[0][i];
-                guess_grid.children[i].style.transition = 'transform 100ms linear;';
-                guess_grid.children[i].addEventListener("transitionend", () => {
-                guess_grid.children[i].classList.remove("fast");
-                guess_grid.children[i].dataset.state = calculateResult(i, g);
-                guess_grid.children[i].style.transition = 'transform 250ms linear;';
-                }, {once: true});
-            }
-        }
-        if (length >= 2) {
-
-            let g = guess_grid_json[1][0]+guess_grid_json[1][1]+guess_grid_json[1][2]+guess_grid_json[1][3]+guess_grid_json[1][4]+guess_grid_json[1][5];
-
-            for (let i =6; i<12; i++) {
-                guess_grid.children[i].dataset.letter = guess_grid_json[1][i-6];
-                guess_grid.children[i].textContent = guess_grid_json[1][i-6];
-                guess_grid.children[i].style.transition = 'transform 100ms linear;';
-                guess_grid.children[i].addEventListener("transitionend", () => {
-                guess_grid.children[i].classList.remove("fast");
-                guess_grid.children[i].dataset.state = calculateResult(i-6, g);
-                guess_grid.children[i].style.transition = 'transform 250ms linear;';
-                }, {once: true});
-            }
-
-        }
-
-        if (length >= 3) {
-            let g = guess_grid_json[2][0]+guess_grid_json[2][1]+guess_grid_json[2][2]+guess_grid_json[2][3]+guess_grid_json[2][4]+guess_grid_json[2][5];
-
-            for (let i =12; i<18; i++) {
-                guess_grid.children[i].dataset.letter = guess_grid_json[2][i-12];
-                guess_grid.children[i].textContent = guess_grid_json[2][i-12];
-                guess_grid.children[i].style.transition = 'transform 100ms linear;';
-                guess_grid.children[i].addEventListener("transitionend", () => {
-                guess_grid.children[i].classList.remove("fast");
-                guess_grid.children[i].dataset.state = calculateResult(i-12, g);
-                guess_grid.children[i].style.transition = 'transform 250ms linear;';
-                }, {once: true});
-            }
-        }
-        if (length >= 4) {
-            let g = guess_grid_json[3][0]+guess_grid_json[3][1]+guess_grid_json[3][2]+guess_grid_json[3][3]+guess_grid_json[3][4]+guess_grid_json[3][5];
-
-            for (let i =18; i<24; i++) {
-                guess_grid.children[i].dataset.letter = guess_grid_json[3][i-18];
-                guess_grid.children[i].textContent = guess_grid_json[3][i-18];
-                guess_grid.children[i].style.transition = 'transform 100ms linear;';
-                guess_grid.children[i].addEventListener("transitionend", () => {
-                guess_grid.children[i].classList.remove("fast");
-                guess_grid.children[i].dataset.state = calculateResult(i-18, g);
-                guess_grid.children[i].style.transition = 'transform 250ms linear;';
-                }, {once: true});
-            }
-        }
-        if (length >= 5) {
-            let g = guess_grid_json[4][0]+guess_grid_json[4][1]+guess_grid_json[4][2]+guess_grid_json[4][3]+guess_grid_json[4][4]+guess_grid_json[4][5];
-
-            for (let i =24; i<30; i++) {
-                guess_grid.children[i].dataset.letter = guess_grid_json[4][i-24];
-                guess_grid.children[i].textContent = guess_grid_json[4][i-24];
-                guess_grid.children[i].style.transition = 'transform 100ms linear;';
-                guess_grid.children[i].addEventListener("transitionend", () => {
-                guess_grid.children[i].classList.remove("fast");
-                guess_grid.children[i].dataset.state = calculateResult(i-24, g);
-                guess_grid.children[i].style.transition = 'transform 250ms linear;';
-                }, {once: true});
-            }
-        }
-        if (length >= 6) {
-            let g = guess_grid_json[5][0]+guess_grid_json[5][1]+guess_grid_json[5][2]+guess_grid_json[5][3]+guess_grid_json[5][4]+guess_grid_json[5][5];
-
-            for (let i =30; i<36; i++) {
-                guess_grid.children[i].dataset.letter = guess_grid_json[5][i-30];
-                guess_grid.children[i].textContent = guess_grid_json[5][i-30];
-                guess_grid.children[i].style.transition = 'transform 100ms linear;';
-                guess_grid.children[i].addEventListener("transitionend", () => {
-                guess_grid.children[i].classList.remove("fast");
-                guess_grid.children[i].dataset.state = calculateResult(i-30, g);
-                guess_grid.children[i].style.transition = 'transform 250ms linear;';
-                }, {once: true});
-            }
-        }
-        if (length >= 7) {
-            let g = guess_grid_json[6][0]+guess_grid_json[6][1]+guess_grid_json[6][2]+guess_grid_json[6][3]+guess_grid_json[6][4]+guess_grid_json[6][5];
-
-            for (let i =36; i<42; i++) {
-                guess_grid.children[i].dataset.letter = guess_grid_json[6][i-36];
-                guess_grid.children[i].textContent = guess_grid_json[6][i-36];
-                guess_grid.children[i].style.transition = 'transform 100ms linear;';
-                guess_grid.children[i].addEventListener("transitionend", () => {
-                guess_grid.children[i].classList.remove("fast");
-                guess_grid.children[i].dataset.state = calculateResult(i-36, g);
-                guess_grid.children[i].style.transition = 'transform 250ms linear;';
-                }, {once: true});
-            }
-        }
-        if (length >= 8) {
-            let g = guess_grid_json[7][0]+guess_grid_json[7][1]+guess_grid_json[7][2]+guess_grid_json[7][3]+guess_grid_json[7][4]+guess_grid_json[7][5];
-
-            for (let i =42; i<48; i++) {
-                guess_grid.children[i].dataset.letter = guess_grid_json[7][i-42];
-                guess_grid.children[i].textContent = guess_grid_json[7][i-42];
-                guess_grid.children[i].style.transition = 'transform 100ms linear;';
-                guess_grid.children[i].addEventListener("transitionend", () => {
-                guess_grid.children[i].classList.remove("fast");
-                guess_grid.children[i].dataset.state = calculateResult(i-42, g);
-                guess_grid.children[i].style.transition = 'transform 250ms linear;';
-                }, {once: true});
-            }
-        }
-
-        setTimeout(() => {
-            for (let i =0; i<length*6; i++) {
-                    guess_grid.children[i].classList.add("fast");
-            } }, 700);
-
-        }
-
-    
-
+const cb = () => {
     if (win || lose) {
         setTimeout(
             () => {
                 if (!s2.classList.contains("hide")) {
                     showStats();
                 }
-            }, 2000)
+            }, 400)
     }
 }
 
-function exportData () {
-    json_file.played_count = played;
-    json_file.percent = win_per;
-    json_file.streak = cur_strk;
-    json_file.max_streak = max_strk;
-    json_file.guess_1 = guess_1;
-    json_file.guess_2 = guess_2;
-    json_file.guess_3 = guess_3;
-    json_file.guess_4 = guess_4;
-    json_file.guess_5 = guess_5;
-    json_file.guess_6 = guess_6;
-    json_file.guess_7 = guess_7;
-    json_file.guess_8 = guess_8;
-    json_file.day = Math.floor(dayOffset);
-    json_file.played_letter = guess_grid_json;
-    json_file.win = win;
-    json_file.lose = lose;
-    json_file.played = has_played;
-    fs.writeFile(`${__dirname}/data.json`, JSON.stringify(json_file, null, "\t"), (err) => {
-        if (err) console.log(err);
-    });
+function importData() {
+    gameData = localStorage.getItem("gameData") ? JSON.parse(localStorage.getItem("gameData")) : startData
+    played = gameData.played_count;
+    has_played = gameData.played;
+    win_per = gameData.percent;
+    cur_strk = gameData.streak;
+    max_strk = gameData.max_streak;
+    guess_1 = gameData.guess_1;
+    guess_2 = gameData.guess_2;
+    guess_3 = gameData.guess_3;
+    guess_4 = gameData.guess_4;
+    guess_5 = gameData.guess_5;
+    guess_6 = gameData.guess_6;
+    guess_7 = gameData.guess_7;
+    guess_8 = gameData.guess_8;
+    win = gameData.win;
+    lose = gameData.lose;
+    // been offline for more than one day.
+    if (Math.floor(dayOffset) > gameData.day + 1) {
+        if (cur_strk > max_strk) {
+            max_strk = cur_strk;
+        }
+        cur_strk = 0;
+        win = false;
+        lose = false;
+        has_played = false;
+        guess_grid_json = [
+            [], [], [], [], [], [], [], []
+        ];
+        exportData();
+    }
+    // reset board if next day
+    else if (Math.floor(dayOffset) > gameData.day) {
+        win = false;
+        lose = false;
+        has_played = false;
+        guess_grid_json = [
+            [], [], [], [], [], [], [], []
+        ];
+
+        exportData();
+    }
+    if (gameData.played) {
+        guess_grid_json = gameData.played_letter;
+        var length = getLengthOfJson();
+        guess_count = getLengthOfJson() + 1;
+        if (length >= 1) {
+            let g = guess_grid_json[0][0] + guess_grid_json[0][1] + guess_grid_json[0][2] + guess_grid_json[0][3] + guess_grid_json[0][4] + guess_grid_json[0][5];
+
+            for (let i = 0; i < 6; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[0][i];
+                guess_grid.children[i].textContent = guess_grid_json[0][i];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                    guess_grid.children[i].classList.remove("fast");
+                    guess_grid.children[i].dataset.state = calculateResult(i, g);
+                    guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, { once: true });
+            }
+            if (gameData.win && getLengthOfJson() == 1) {
+                setTimeout(() => {
+                    checkWinLose(g, Array.from(guess_grid.children).slice(0, 6), true, cb);
+                }, 1200);
+            }
+        }
+        if (length >= 2) {
+
+            let g = guess_grid_json[1][0] + guess_grid_json[1][1] + guess_grid_json[1][2] + guess_grid_json[1][3] + guess_grid_json[1][4] + guess_grid_json[1][5];
+
+            for (let i = 6; i < 12; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[1][i - 6];
+                guess_grid.children[i].textContent = guess_grid_json[1][i - 6];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                    guess_grid.children[i].classList.remove("fast");
+                    guess_grid.children[i].dataset.state = calculateResult(i - 6, g);
+                    guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, { once: true });
+            }
+            if (gameData.win && getLengthOfJson() == 2) {
+                setTimeout(() => {
+                    checkWinLose(g, Array.from(guess_grid.children).slice(6, 12), true, cb);
+                }, 1500);
+            }
+
+        }
+
+        if (length >= 3) {
+            let g = guess_grid_json[2][0] + guess_grid_json[2][1] + guess_grid_json[2][2] + guess_grid_json[2][3] + guess_grid_json[2][4] + guess_grid_json[2][5];
+
+            for (let i = 12; i < 18; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[2][i - 12];
+                guess_grid.children[i].textContent = guess_grid_json[2][i - 12];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                    guess_grid.children[i].classList.remove("fast");
+                    guess_grid.children[i].dataset.state = calculateResult(i - 12, g);
+                    guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, { once: true });
+            }
+            if (gameData.win && getLengthOfJson() == 3) {
+                setTimeout(() => {
+                    checkWinLose(g, Array.from(guess_grid.children).slice(12, 18), true, cb);
+                }, 1800);
+            }
+        }
+        if (length >= 4) {
+            let g = guess_grid_json[3][0] + guess_grid_json[3][1] + guess_grid_json[3][2] + guess_grid_json[3][3] + guess_grid_json[3][4] + guess_grid_json[3][5];
+
+            for (let i = 18; i < 24; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[3][i - 18];
+                guess_grid.children[i].textContent = guess_grid_json[3][i - 18];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                    guess_grid.children[i].classList.remove("fast");
+                    guess_grid.children[i].dataset.state = calculateResult(i - 18, g);
+                    guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, { once: true });
+            }
+            if (gameData.win && getLengthOfJson() == 4) {
+                setTimeout(() => {
+                    checkWinLose(g, Array.from(guess_grid.children).slice(18, 24), true, cb);
+                }, 2100);
+            }
+        }
+        if (length >= 5) {
+            let g = guess_grid_json[4][0] + guess_grid_json[4][1] + guess_grid_json[4][2] + guess_grid_json[4][3] + guess_grid_json[4][4] + guess_grid_json[4][5];
+
+            for (let i = 24; i < 30; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[4][i - 24];
+                guess_grid.children[i].textContent = guess_grid_json[4][i - 24];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                    guess_grid.children[i].classList.remove("fast");
+                    guess_grid.children[i].dataset.state = calculateResult(i - 24, g);
+                    guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, { once: true });
+            }
+            if (gameData.win && getLengthOfJson() == 5) {
+                setTimeout(() => {
+                    checkWinLose(g, Array.from(guess_grid.children).slice(24, 30), true, cb);
+                }, 2400);
+            }
+        }
+        if (length >= 6) {
+            let g = guess_grid_json[5][0] + guess_grid_json[5][1] + guess_grid_json[5][2] + guess_grid_json[5][3] + guess_grid_json[5][4] + guess_grid_json[5][5];
+
+            for (let i = 30; i < 36; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[5][i - 30];
+                guess_grid.children[i].textContent = guess_grid_json[5][i - 30];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                    guess_grid.children[i].classList.remove("fast");
+                    guess_grid.children[i].dataset.state = calculateResult(i - 30, g);
+                    guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, { once: true });
+            }
+            if (gameData.win && getLengthOfJson() == 6) {
+                setTimeout(() => {
+                    checkWinLose(g, Array.from(guess_grid.children).slice(30, 36), true, cb);
+                }, 2700);
+            }
+        }
+        if (length >= 7) {
+            let g = guess_grid_json[6][0] + guess_grid_json[6][1] + guess_grid_json[6][2] + guess_grid_json[6][3] + guess_grid_json[6][4] + guess_grid_json[6][5];
+
+            for (let i = 36; i < 42; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[6][i - 36];
+                guess_grid.children[i].textContent = guess_grid_json[6][i - 36];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                    guess_grid.children[i].classList.remove("fast");
+                    guess_grid.children[i].dataset.state = calculateResult(i - 36, g);
+                    guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, { once: true });
+            }
+            if (gameData.win && getLengthOfJson() == 7) {
+                setTimeout(() => {
+                    checkWinLose(g, Array.from(guess_grid.children).slice(36, 42), true, cb);
+                }, 3000);
+            }
+        }
+        if (length >= 8) {
+            let g = guess_grid_json[7][0] + guess_grid_json[7][1] + guess_grid_json[7][2] + guess_grid_json[7][3] + guess_grid_json[7][4] + guess_grid_json[7][5];
+
+            for (let i = 42; i < 48; i++) {
+                guess_grid.children[i].dataset.letter = guess_grid_json[7][i - 42];
+                guess_grid.children[i].textContent = guess_grid_json[7][i - 42];
+                guess_grid.children[i].style.transition = 'transform 100ms linear;';
+                guess_grid.children[i].addEventListener("transitionend", () => {
+                    guess_grid.children[i].classList.remove("fast");
+                    guess_grid.children[i].dataset.state = calculateResult(i - 42, g);
+                    guess_grid.children[i].style.transition = 'transform 250ms linear;';
+                }, { once: true });
+            }
+            if (gameData.win && getLengthOfJson() == 8) {
+                setTimeout(() => {
+                    checkWinLose(g, Array.from(guess_grid.children).slice(42, 48), true, cb);
+                }, 2800);
+            }
+        }
+
+        setTimeout(() => {
+            for (let i = 0; i < length * 6; i++) {
+                setTimeout(() => {
+                    guess_grid.children[i].classList.add("fast");
+                }, i * 25);
+            }
+        }, 400);
+
+    }
+
+
+}
+
+function exportData() {
+    gameData.played_count = played;
+    gameData.percent = win_per;
+    gameData.streak = cur_strk;
+    gameData.max_streak = max_strk;
+    gameData.guess_1 = guess_1;
+    gameData.guess_2 = guess_2;
+    gameData.guess_3 = guess_3;
+    gameData.guess_4 = guess_4;
+    gameData.guess_5 = guess_5;
+    gameData.guess_6 = guess_6;
+    gameData.guess_7 = guess_7;
+    gameData.guess_8 = guess_8;
+    gameData.day = Math.floor(dayOffset);
+    gameData.played_letter = guess_grid_json;
+    gameData.win = win;
+    gameData.lose = lose;
+    gameData.played = has_played;
+    localStorage.setItem("gameData", JSON.stringify(gameData));
 }
 
 
 
-function showStats()
-{   
+function showStats() {
+    s2.classList.remove("hide");
     s2.style.display = "block";
     stats_screen.style.display = "flex";
 }
@@ -358,19 +416,19 @@ function showStats()
 
 
 
-function calculateWinPercentage () {
+function calculateWinPercentage() {
     var total = played;
     var correct = guess_1 + guess_2 + guess_3 + guess_4 + guess_5 + guess_6 + guess_7 + guess_8;
     if (total == 0) {
         return 0;
     }
-    var win_per = Math.round((correct/total)*100);
+    var win_per = Math.round((correct / total) * 100);
     return win_per;
 }
 
-function updateStats () {
+function updateStats() {
     played_div.textContent = played;
-    per_div.textContent = win_per+"%";
+    per_div.textContent = win_per + "%";
     ms_div.textContent = max_strk;
     cs_div.textContent = cur_strk;
     if (win || lose) {
@@ -379,30 +437,35 @@ function updateStats () {
     else {
         document.getElementById("foot").style.display = "none";
     }
-    distrib_div.children[0].textContent = '1: '+guess_1;
-    distrib_div.children[1].textContent = '2: '+guess_2;
-    distrib_div.children[2].textContent = '3: '+guess_3;
-    distrib_div.children[3].textContent = '4: '+guess_4;
-    distrib_div.children[4].textContent = '5: '+guess_5;
-    distrib_div.children[5].textContent = '6: '+guess_6;
-    distrib_div.children[6].textContent = '7: '+guess_7;
-    distrib_div.children[7].textContent = '8: '+guess_8;
+    distrib_div.children[0].textContent = '1: ' + guess_1;
+    distrib_div.children[1].textContent = '2: ' + guess_2;
+    distrib_div.children[2].textContent = '3: ' + guess_3;
+    distrib_div.children[3].textContent = '4: ' + guess_4;
+    distrib_div.children[4].textContent = '5: ' + guess_5;
+    distrib_div.children[5].textContent = '6: ' + guess_6;
+    distrib_div.children[6].textContent = '7: ' + guess_7;
+    distrib_div.children[7].textContent = '8: ' + guess_8;
     if (win) {
-    distrib_div.children[guess_count-2].style.color = "hsl(114, 42%, 59%)";
+        distrib_div.children[guess_count - 2].style.color = "hsl(114, 42%, 59%)";
     }
 
 }
 
 
 function hideStats() {
-        s2.classList.add("hide");
-        s2.addEventListener("animationend", () => {
-            setTimeout(() => {
-                stats_screen.style.display = "none";
-            }, 200);
-            s2.style.display = "none";
-            s2.classList.remove("hide");
-        }, {once: true});
+    if (stats_screen.style.display == "none" || isClosing) {
+        return;
+    }
+    s2.classList.add("hide");
+    isClosing = true;
+    s2.addEventListener("animationend", () => {
+        setTimeout(() => {
+            stats_screen.style.display = "none";
+            isClosing = false;
+        }, 200);
+        s2.style.display = "none";
+        s2.classList.remove("hide");
+    }, { once: true });
 }
 
 
@@ -410,7 +473,7 @@ function createOutput() {
     var output = "Sesordle ";
     output += Math.floor(dayOffset) + " ";
     if (win) {
-    output += (guess_count-1)+"/8\n";
+        output += (guess_count - 1) + "/8\n";
     }
     else if (lose) {
         output += "X/8\n";
@@ -427,29 +490,29 @@ function createOutput() {
                 output += "🟨";
             }
         }
-        if (counter == 6 && guess_grid.children[i+1]) {
-            if (guess_grid.children[i+1].dataset.state != undefined) {
-            output += "\n";
-            counter = 1;
+        if (counter == 6 && guess_grid.children[i + 1]) {
+            if (guess_grid.children[i + 1].dataset.state != undefined) {
+                output += "\n";
+                counter = 1;
             }
         }
         else {
-        counter ++;
+            counter++;
         }
-    }    
+    }
 
     return output;
 }
 
-function copyToClipboard () {
+function copyToClipboard() {
     clipboard.writeText(createOutput());
-    showAlert("Copied to clipboard!", 1000, -1);
+    showAlert("Copied to clipboard!", 1000, null, -1);
 }
 
-function startInteraction () {
+function startInteraction() {
     document.addEventListener("keydown", handleKeyPress);
-  }
-  
+}
+
 function pressKey(key) {
     const activeTiles = getActiveTiles();
     if (activeTiles.length >= 6) return;
@@ -459,54 +522,61 @@ function pressKey(key) {
     next.style.transition = "transform 50ms linear";
     next.classList.add("expand");
     next.addEventListener("transitionend", () => {
-            next.classList.remove("expand");
+        next.classList.remove("expand");
         setTimeout(() => {
-        next.style.transition = "transform 250ms linear";
-        }, 25);
-    });
+            next.style.transition = "transform 250ms linear";
+        }, 110);
+    }, { once: true });
     next.dataset.state = "active"
 }
 
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        hideStats();
+        return;
+    }
+})
 
-  
-  function handleKeyPress(e) {
+
+function handleKeyPress(e) {
     if (e.key === "Enter") {
         var activeTiles = getActiveTiles();
         for (let i = 0; i < activeTiles.length; i++) {
             const tile = activeTiles[i];
-            if (tile.classList.value.includes("expand")) {
+            if (tile.classList.contains("expand")) {
+                tile.style.transition = "";
                 tile.classList.remove("expand");
             }
+        }
+        setTimeout(() => {
+            submitGuess();
+        }, 300);
     }
-    setTimeout(() => {
-        submitGuess();
-    }, 50);
-}
     if (e.key === "Backspace" || e.key === "Delete") {
-      deleteKey();
-      return;
+        deleteKey();
+        return;
     }
     if (e.key.match(/^[a-zA-Z]$/)) {
-      pressKey(e.key);
-      return;
+        pressKey(e.key);
+        return;
     }
-  
+
 }
 
-  function getActiveTiles() {
+function getActiveTiles() {
     return guess_grid.querySelectorAll("[data-state='active']")
 
 }
 
 function getGuessTiles() {
-    return [guess_grid.children[(guess_count-1)*6],guess_grid.children[(guess_count-1)*6+1],guess_grid.children[(guess_count-1)*6+2],guess_grid.children[(guess_count-1)*6+3],guess_grid.children[(guess_count-1)*6+4],guess_grid.children[(guess_count-1)*6+5]];
+    return [guess_grid.children[(guess_count - 1) * 6], guess_grid.children[(guess_count - 1) * 6 + 1], guess_grid.children[(guess_count - 1) * 6 + 2], guess_grid.children[(guess_count - 1) * 6 + 3], guess_grid.children[(guess_count - 1) * 6 + 4], guess_grid.children[(guess_count - 1) * 6 + 5]];
 }
-  
-  function stopInteraction () {
+
+function stopInteraction() {
     document.removeEventListener("keydown", handleKeyPress);
 }
 
-function deleteKey () {
+function deleteKey() {
     const activeTiles = getActiveTiles();
     const lastTile = activeTiles[activeTiles.length - 1];
     if (lastTile == null) return;
@@ -515,20 +585,22 @@ function deleteKey () {
     delete lastTile.dataset.state;
 }
 
-function submitGuess () {
+function submitGuess() {
     const activeTiles = [...getActiveTiles()]
     const guess = activeTiles.reduce((word, tile) => {
         return word + tile.dataset.letter
     }, "")
     if (activeTiles.length < 6) {
-     if (alertContainer.children.length <3){
-        showAlert("Not enough letters.");
-    }
-    shakeTiles([...getGuessTiles()]);
-    return
+        if (alertContainer.children.length < 3) {
+            showAlert("Not enough letters.");
+        }
+        shakeTiles([...getGuessTiles()]);
+        return
     }
     if (wordsList.indexOf(guess) === -1) {
-        showAlert("Not in word list.");
+        if (alertContainer.children.length < 3) {
+            showAlert("Not in word list.");
+        }
         shakeTiles([...getGuessTiles()]);
         return;
     }
@@ -536,17 +608,19 @@ function submitGuess () {
     if (!has_played) {
         has_played = true;
     }
-    activeTiles.forEach((...params) => flipTiles(...params, guess))
+    activeTiles.forEach((...params) => {
+        flipTiles(...params, guess)
+    })
     guess_count++;
 
 }
-    
 
 
 
 
 
-function showAlert(message, duration = 1000, zIndex=0) {
+
+function showAlert(message, duration = 1000, callback = null, zIndex = 0) {
     const alert = document.createElement("div");
     if (zIndex == -1) {
         stats_screen.style.zIndex = 1;
@@ -555,149 +629,176 @@ function showAlert(message, duration = 1000, zIndex=0) {
     alert.style.zIndex = zIndex;
     alert.classList.add("alert");
     alertContainer.prepend(alert);
-    if (duration == null) return 
+    if (duration == null) return
     if (duration != -1) {
-    setTimeout(() => {
-        alert.classList.add("hide")
-        alert.addEventListener("transitionend", () => {
-            alert.remove()
-            if (alertContainer.length == 0) {
-            stats_screen.style.zIndex = 2;
-            }
-        });
-    }, duration);
+        setTimeout(() => {
+            alert.classList.add("hide")
+            alert.addEventListener("transitionend", () => {
+                alert.remove()
+                if (alertContainer.length == 0) {
+                    stats_screen.style.zIndex = 2;
+                }
+                if (callback) callback();
+            });
+        }, duration);
+    }
+
 }
-    
-} 
 
 function shakeTiles(tiles) {
     tiles.forEach(tile => {
         tile.classList.add("shake")
         tile.addEventListener("animationend", () => {
             tile.classList.remove("shake")
-        }, {once: true});
+        }, { once: true });
     });
 }
 
-function flipTiles (tile, index, array, guess) {
+function flipTiles(tile, index, array, guess) {
     const letter = tile.dataset.letter;
+    tile.style.transition = "";
+    setTimeout(() => {
+        tile.style.transition = "transform 250ms linear";
+    }, 2);
     setTimeout(() => {
         tile.classList.add("flip")
-    }, (index*500)/2);
+    }, (index * 500) / 2);
 
 
 
     tile.addEventListener("transitionend", () => {
-        tile.classList.remove("flip")
-        /// check if all are correct first to fix bug
+        tile.classList.remove("flip");
         tile.dataset.state = calculateResult(index, guess);
 
-        
+
 
         if (index === array.length - 1) {
             tile.addEventListener("transitionend", () => {
                 startInteraction()
-                checkWinLose(guess,array);
-            }, {once: true});
+                checkWinLose(guess, array);
+            }, { once: true });
         }
-    },  {once: true});
-    guess_grid_json[guess_count-1][index] = letter;
+    }, { once: true });
+    guess_grid_json[guess_count - 1][index] = letter;
 
 
 
 }
 
-function checkWinLose(guess, tiles) {
+function checkWinLose(guess, tiles, imported = false, cb = null) {
     if (guess == targetWord) {
         switch (guess_count) {
             case 2:
-                showAlert("Genius!",1000)
-                guess_1++;
+                showAlert("Genius!", 1000, cb)
+                if (!imported) {
+                    guess_1++;
+                }
                 break;
             case 3:
-                showAlert("Master!",1000)
-                guess_2++;
+                showAlert("Master!", 1000, cb)
+                if (!imported) {
+                    guess_2++;
+                }
                 break;
             case 4:
-                showAlert("Expert!",1000)
-                guess_3++;
+                showAlert("Expert!", 1000, cb)
+                if (!imported) {
+                    guess_3++;
+                }
                 break;
             case 5:
-                showAlert("Pro!",1000)
-                guess_4++;
+                showAlert("Pro!", 1000, cb)
+                if (!imported) {
+                    guess_4++;
+                }
                 break;
             case 6:
-                showAlert("Whew!",1000)
-                guess_5++;
+                showAlert("Whew!", 1000, cb)
+                if (!imported) {
+                    guess_5++;
+                }
                 break;
             case 7:
-                showAlert("Phew!",1000)
-                guess_6++;
+                showAlert("Phew!", 1000, cb)
+                if (!imported) {
+                    guess_6++;
+                }
                 break;
             case 8:
-                showAlert("So Close!",1000)
-                guess_7++;
+                showAlert("So Close!", 1000, cb)
+                if (!imported) {
+                    guess_7++;
+                }
                 break;
             case 9:
-                showAlert("Too Close!",1000)
-                guess_8++;
+                showAlert("Too Close!", 1000, cb)
+                if (!imported) {
+                    guess_8++;
+                }
                 break;
         }
-        win = true;
-        played++
-        cur_strk++;
-        win_per = calculateWinPercentage();
-        if (cur_strk > max_strk) {
-            max_strk = cur_strk;
+        if (!imported) {
+            win = true;
+            played++
+            cur_strk++;
+            win_per = calculateWinPercentage();
+            if (cur_strk > max_strk) {
+                max_strk = cur_strk;
+            }
+            updateStats();
         }
-        updateStats();
     } else if (guess_count == 9) {
-            showAlert(targetWord.toUpperCase(),-1)
+        showAlert(targetWord.toUpperCase(), 1000, null, -1)
+        if (!imported) {
             win = false;
             lose = true;
-            stopInteraction()
-            setTimeout(() => {
-                if (!s2.classList.contains("hide")) {
+        }
+        stopInteraction()
+        setTimeout(() => {
+            if (!s2.classList.contains("hide") && !imported) {
                 showStats();
-                }
+            }
             return
         }, 1700);
-        played++;
-        cur_strk = 0;
-        win_per = calculateWinPercentage();
-        if (cur_strk > max_strk) {
-            max_strk = cur_strk;
+        if (!imported) {
+            played++;
+            cur_strk = 0;
+            win_per = calculateWinPercentage();
+            if (cur_strk > max_strk) {
+                max_strk = cur_strk;
+            }
+            updateStats();
         }
-        updateStats();
         return;
-     }
+    }
     if (win) {
-    
+
         danceTiles(tiles)
         stopInteraction()
         setTimeout(() => {
-            if (!s2.classList.contains("hide")) {
+            if (!s2.classList.contains("hide") && !imported) {
                 showStats();
-                }
-        return
-    }, 1400);
-}
-exportData();
+            }
+            return
+        }, 1400);
+    }
+    exportData();
 }
 
 
 function danceTiles(tiles) {
     tiles.forEach((tile, index) => {
         setTimeout(() => {
-        tile.classList.add("dance")
-        tile.addEventListener("animationend", () => {
-            tile.classList.remove("dance")
-        }, {once: true});
-        }, (index*500)/5);
+            tile.classList.add("dance")
+            tile.addEventListener("animationend", () => {
+                tile.classList.remove("dance")
+            }, { once: true });
+        }, (index * 500) / 5);
     });
 }
 
 
+document.querySelector("#main").innerText = "Sesordle - Day "+Math.floor(dayOffset);
 startInteraction();
 importData();
 if (win || lose) {

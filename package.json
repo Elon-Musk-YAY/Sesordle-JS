@@ -23,13 +23,19 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "icon": "src/icon.icns"
+        "icon": "src/icon.icns",
+        "ignore": [
+          "Makefile",
+          ".gitignore",
+          "src/icon.icns"
+        ],
+        "asar": true
       },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "my_app"
+            "name": "sesordle"
           }
         },
         {
