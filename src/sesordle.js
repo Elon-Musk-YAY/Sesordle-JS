@@ -44,7 +44,7 @@ const startData = {
 }
 var gameData;
 let nex_tim = document.getElementById("nex");
-const offsetFromDate = new Date(2023, 3, 14)
+const offsetFromDate = new Date(2023, 3, 9)
 const msOffset = Date.now() - offsetFromDate
 const dayOffset = Math.floor(msOffset / 1000 / 60 / 60 / 24)
 var nextDay = new Date();
@@ -73,11 +73,11 @@ share_btn.onclick = copyToClipboard;
 const { ipcRenderer } = require('electron')
 
 // Listen for the IPC message
-ipcRenderer.on('saveType', (event, name,arg) => {
-  // Call the function with the passed arguments
-  setType(name,arg)
+ipcRenderer.on('saveType', (event, name, arg) => {
+    // Call the function with the passed arguments
+    setType(name, arg)
 })
-ipcRenderer.on('getType', (event,name,type_name) => {
+ipcRenderer.on('getType', (event, name, type_name) => {
     if (localStorage.getItem(type_name) == null) {
         return null;
     }
@@ -87,7 +87,7 @@ var clicks = 0;
 document.querySelector("#title-bar").addEventListener("click", () => {
     clicks++;
     if (clicks == 2) {
-
+        console.log("double click");
         ipcRenderer.send("toggleMaximize");
         clicks = 0;
     }
@@ -139,13 +139,13 @@ function getLengthOfJson() {
 function wipeSave() {
     if (!hasPressedWipe) {
         hasPressedWipe = true;
-        showAlert("Click again to confirm wipe.", 4000,() => {hasPressedWipe=false}, -1);
+        showAlert("Click again to confirm wipe.", 4000, () => { hasPressedWipe = false }, -1);
     } else {
-    localStorage.removeItem("gameData");
-    hideStats();
-    hasPressedWipe = false;
-    window.location.reload();
-}
+        localStorage.removeItem("gameData");
+        hideStats();
+        hasPressedWipe = false;
+        window.location.reload();
+    }
 
 
 }
@@ -180,19 +180,16 @@ function calculateResult(index, guess) {
     for (let i = 0; i < 6; i++) {
         if (targetWord[i] == guess[i]) {
             out[i] = "correct";
-            // getKey(guess[i].toUpperCase()).classList.add("correct");
             temp = removeByIndex(temp, temp.indexOf(guess[i]));
         }
     }
     for (let i = 0; i < 6; i++) {
         if (temp.includes(guess[i]) && out[i] != "correct") {
             out[i] = "wrong-location";
-            // getKey(guess[i].toUpperCase()).classList.add("wrong-location");
             temp = removeByIndex(temp, temp.indexOf(guess[i]));
         }
         else if (out[i] != "correct") {
             out[i] = "wrong";
-            // getKey(guess[i].toUpperCase()).classList.add("wrong");
         }
 
     }
@@ -388,17 +385,17 @@ function importData() {
                 }, i * 25);
             }
         }, 400);
-        guess_grid.children[(length*6)-1].addEventListener("transitionend", () => {
+        guess_grid.children[(length * 6) - 1].addEventListener("transitionend", () => {
             setTimeout(() => {
-            const tiles = Array.from(guess_grid.children).slice((length-1) * 6, length * 6);
-            const guess = tiles.reduce((word, tile) => {
-                return word + tile.dataset.letter
-            }, "")
-            if (gameData.win || gameData.lose) {
-                checkWinLose(guess, tiles, true, cb);
-            }
+                const tiles = Array.from(guess_grid.children).slice((length - 1) * 6, length * 6);
+                const guess = tiles.reduce((word, tile) => {
+                    return word + tile.dataset.letter
+                }, "")
+                if (gameData.win || gameData.lose) {
+                    checkWinLose(guess, tiles, true, cb);
+                }
             }, 300);
-        },{once: true});
+        }, { once: true });
 
 
     }
@@ -825,7 +822,7 @@ function danceTiles(tiles) {
 }
 
 
-function setType(name,data) {
+function setType(name, data) {
     localStorage.setItem(name, JSON.stringify(data));
 }
 
