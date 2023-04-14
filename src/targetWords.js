@@ -60,7 +60,7 @@ const allWords = [
     "magnum",
     "booked",
     "leaped",
-    "idiots",
+    "doctor",
     "hazmat",
     "headed",
     "amused",

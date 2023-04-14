@@ -3,7 +3,7 @@ const wordsList = require('./words.js');
 
 /*
 * Created by Akshar Desai on 5/6/2022.
-* Updated in April 2023
+* Updated in April 2023.
 */
 
 const alertContainer = document.querySelector("[data-alert-container]")
@@ -27,7 +27,7 @@ const startData = {
     "lose": false,
     "max_streak": 0,
     "percent": 0,
-    "played": true,
+    "played": false,
     "played_count": 0,
     "played_letter": [
         [],
@@ -44,15 +44,15 @@ const startData = {
 }
 var gameData;
 let nex_tim = document.getElementById("nex");
-const offsetFromDate = new Date(2023, 3, 9)
+const offsetFromDate = new Date(2023, 3, 14)
 const msOffset = Date.now() - offsetFromDate
-const dayOffset = msOffset / 1000 / 60 / 60 / 24
+const dayOffset = Math.floor(msOffset / 1000 / 60 / 60 / 24)
 var nextDay = new Date();
 nextDay.setDate(nextDay.getDate() + 1);
 nextDay.setMinutes(0);
 nextDay.setSeconds(0);
 nextDay.setHours(0);
-const targetWord = targetWords[Math.floor(dayOffset)]
+const targetWord = targetWords[dayOffset]
 const stats_screen = document.getElementById("stats_screen");
 const s2 = document.getElementById("s2")
 const played_div = document.querySelector("#stat-container-played #stat");
@@ -69,6 +69,33 @@ s2.addEventListener('click', e => {
 })
 var share_btn = document.getElementById("share");
 share_btn.onclick = copyToClipboard;
+
+const { ipcRenderer } = require('electron')
+
+// Listen for the IPC message
+ipcRenderer.on('saveType', (event, name,arg) => {
+  // Call the function with the passed arguments
+  setType(name,arg)
+})
+ipcRenderer.on('getType', (event,name,type_name) => {
+    if (localStorage.getItem(type_name) == null) {
+        return null;
+    }
+    ipcRenderer.send(name, JSON.parse(localStorage.getItem(type_name)));
+});
+var clicks = 0;
+document.querySelector("#title-bar").addEventListener("click", () => {
+    clicks++;
+    if (clicks == 2) {
+
+        ipcRenderer.send("toggleMaximize");
+        clicks = 0;
+    }
+    setTimeout(() => {
+        clicks = 0;
+    }, 250);
+});
+
 
 var played, win_per, cur_strk, max_strk, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, guess_7, guess_8, has_played;
 played = 0;
@@ -94,6 +121,10 @@ var guess_grid_json = [
     [],
     [],
 ]
+
+function getKey(keyName) {
+    return document.querySelector(`[data-key="${keyName}"]`);
+}
 
 function getLengthOfJson() {
     var length = 0;
@@ -131,6 +162,7 @@ function updateTimer() {
 
     if (hours == "00" && minutes == "00" && seconds == "00") {
         clearInterval(timerUpdate)
+        window.location.reload();
     };
     nex_tim.textContent = `${hours}:${minutes}:${seconds}`;
 }
@@ -148,18 +180,30 @@ function calculateResult(index, guess) {
     for (let i = 0; i < 6; i++) {
         if (targetWord[i] == guess[i]) {
             out[i] = "correct";
+            // getKey(guess[i].toUpperCase()).classList.add("correct");
             temp = removeByIndex(temp, temp.indexOf(guess[i]));
         }
     }
     for (let i = 0; i < 6; i++) {
         if (temp.includes(guess[i]) && out[i] != "correct") {
             out[i] = "wrong-location";
+            // getKey(guess[i].toUpperCase()).classList.add("wrong-location");
             temp = removeByIndex(temp, temp.indexOf(guess[i]));
         }
         else if (out[i] != "correct") {
             out[i] = "wrong";
+            // getKey(guess[i].toUpperCase()).classList.add("wrong");
         }
 
+    }
+    if (out[index] == "correct") {
+        getKey(guess[index].toUpperCase()).classList.add("correct");
+    }
+    else if (out[index] == "wrong-location") {
+        getKey(guess[index].toUpperCase()).classList.add("wrong-location");
+    }
+    else if (out[index] == "wrong") {
+        getKey(guess[index].toUpperCase()).classList.add("wrong");
     }
 
     return out[index];
@@ -193,7 +237,7 @@ function importData() {
     win = gameData.win;
     lose = gameData.lose;
     // been offline for more than one day.
-    if (Math.floor(dayOffset) > gameData.day + 1) {
+    if (dayOffset > gameData.day + 1) {
         if (cur_strk > max_strk) {
             max_strk = cur_strk;
         }
@@ -207,7 +251,7 @@ function importData() {
         exportData();
     }
     // reset board if next day
-    else if (Math.floor(dayOffset) > gameData.day) {
+    else if (dayOffset > gameData.day) {
         win = false;
         lose = false;
         has_played = false;
@@ -375,7 +419,7 @@ function exportData() {
     gameData.guess_6 = guess_6;
     gameData.guess_7 = guess_7;
     gameData.guess_8 = guess_8;
-    gameData.day = Math.floor(dayOffset);
+    gameData.day = dayOffset;
     gameData.played_letter = guess_grid_json;
     gameData.win = win;
     gameData.lose = lose;
@@ -451,7 +495,7 @@ function hideStats() {
 
 function createOutput() {
     var output = "Sesordle ";
-    output += Math.floor(dayOffset) + " ";
+    output += dayOffset + " ";
     if (win) {
         output += (guess_count - 1) + "/8\n";
     }
@@ -667,6 +711,7 @@ function flipTiles(tile, index, array, guess) {
 
 function checkWinLose(guess, tiles, imported = false, cb = null) {
     if (guess == targetWord) {
+        document.querySelector("#main").innerHTML = resultedText
         switch (guess_count) {
             case 2:
                 showAlert("Genius!", 1000, cb)
@@ -693,7 +738,7 @@ function checkWinLose(guess, tiles, imported = false, cb = null) {
                 }
                 break;
             case 6:
-                showAlert("Whew!", 1000, cb)
+                showAlert("Well Done!", 1000, cb)
                 if (!imported) {
                     guess_5++;
                 }
@@ -705,7 +750,7 @@ function checkWinLose(guess, tiles, imported = false, cb = null) {
                 }
                 break;
             case 8:
-                showAlert("So Close!", 1000, cb)
+                showAlert("Not Bad!", 1000, cb)
                 if (!imported) {
                     guess_7++;
                 }
@@ -729,6 +774,7 @@ function checkWinLose(guess, tiles, imported = false, cb = null) {
         }
     } else if (guess_count == 9) {
         showAlert(targetWord.toUpperCase(), 1000, cb, -1)
+        document.querySelector("#main").innerHTML = resultedText
         if (!imported) {
             win = false;
             lose = true;
@@ -779,13 +825,19 @@ function danceTiles(tiles) {
 }
 
 
-const baseText = `Sesordle — Day ${Math.floor(dayOffset)}`
+function setType(name,data) {
+    localStorage.setItem(name, JSON.stringify(data));
+}
+
+
+const baseText = `Sesordle — Day ${dayOffset}`
+const resultedText = `${baseText}: <span style='font-weight: bold'>${targetWord.toUpperCase()}</span>`
 
 document.querySelector("#main").innerHTML = baseText;
 startInteraction();
 importData();
 if (win || lose) {
     stopInteraction();
-    document.querySelector("#main").innerHTML = `${baseText}: <span style='font-weight: bold'>${targetWord.toUpperCase()}</span>`;
+    document.querySelector("#main").innerHTML = resultedText
 }
 updateStats();
