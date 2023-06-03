@@ -1,5 +1,4 @@
-# Sesordle
+# Sesordle-CPP
+The Sesordle game made in C++
 
-A wordle game but with 6 letters!
-
-[Download Link (MacOS only)](https://akshar727.itch.io/sesordle)
+#### I'm sorry for no package info I'm too lazy. ####
