@@ -1,4 +1,4 @@
-const wordList = ['abacus',
+export const wordsList = ['abacus',
 'abased',
 'abases',
 'abated',
@@ -5126,4 +5126,3 @@ const wordList = ['abacus',
 'zonked',
 'zoomed',
 'zygote']
-module.exports = wordList;

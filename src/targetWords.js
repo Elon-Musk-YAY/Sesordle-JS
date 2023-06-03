@@ -1,4 +1,4 @@
-const allWords = [
+export const targetWords = [
     "mayhem",
     "broody",
     "comeon",
@@ -400,4 +400,3 @@ const allWords = [
     "dilute",
     "heated"
 ]
-module.exports = allWords

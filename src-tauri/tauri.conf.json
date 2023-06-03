@@ -1,0 +1,64 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "withGlobalTauri": false
+  },
+  "package": {
+    "productName": "Sesordle",
+    "version": "2.0.5"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "clipboard": {
+        "writeText": true
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true,
+        "setSize": true,
+        "setPosition": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.akshar727.sesordle",
+      "publisher": "Akshar Desai",
+      "copyright": "© 2023 Akshar Desai",
+      "icon": [
+        "icons/icon.icns"
+      ]
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "title": "",
+        "width": 800,
+        "height": 600,
+        "visible": false,
+        "titleBarStyle": "Overlay",
+        "minWidth": 830,
+        "minHeight": 740
+      }
+    ]
+  }
+}
